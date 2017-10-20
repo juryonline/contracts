@@ -128,8 +128,6 @@ contract JOT is ERC20 {
     string public symbol = "JOT";
     uint8 public decimals = 18;
 
-    address public crowdsaleMinter;
-
     modifier isNotStartedOnly() {
         require(!isStarted);
         _;
@@ -163,11 +161,11 @@ contract JOT is ERC20 {
     }
 
 
-    function multimint(address[] dests, uint256[] values) public
+    function multimint(address[] dests, uint[] values) public
     only(owner)
     isNotStartedOnly
-    returns (uint256) {
-        uint256 i = 0;
+    returns (uint) {
+        uint i = 0;
         while (i < dests.length) {
            mint(dests[i], values[i]);
            i += 1;
