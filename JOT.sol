@@ -1,25 +1,25 @@
 pragma solidity ^0.4.15;
 
 library SafeMath {
-  function mul(uint256 a, uint256 b) internal constant returns (uint256) {
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a * b;
     assert(a == 0 || c / a == b);
     return c;
   }
 
-  function div(uint256 a, uint256 b) internal constant returns (uint256) {
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
     // assert(b > 0); // Solidity automatically throws when dividing by 0
     uint256 c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
 
-  function sub(uint256 a, uint256 b) internal constant returns (uint256) {
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     assert(b <= a);
     return a - b;
   }
 
-  function add(uint256 a, uint256 b) internal constant returns (uint256) {
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
     assert(c >= a);
     return c;
@@ -38,15 +38,15 @@ contract Owned is Base {
     address public owner;
     address newOwner;
 
-    function Owned() {
+    function Owned() public {
         owner = msg.sender;
     }
 
-    function transferOwnership(address _newOwner) only(owner) {
+    function transferOwnership(address _newOwner) only(owner) public {
         newOwner = _newOwner;
     }
 
-    function acceptOwnership() only(newOwner) {
+    function acceptOwnership() only(newOwner) public {
         OwnershipTransferred(owner, newOwner);
         owner = newOwner;
     }
@@ -61,7 +61,7 @@ contract ERC20 is Owned {
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
 
-    function transfer(address _to, uint _value) isStartedOnly returns (bool success) {
+    function transfer(address _to, uint _value) isStartedOnly public returns (bool success) {
         require(_to != address(0));
         require(_value <= balances[msg.sender]);
     
@@ -72,7 +72,7 @@ contract ERC20 is Owned {
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint _value) isStartedOnly returns (bool success) {
+    function transferFrom(address _from, address _to, uint _value) isStartedOnly public returns (bool success) {
         require(_to != address(0));
         require(_value <= balances[_from]);
         require(_value <= allowed[_from][msg.sender]);
@@ -84,11 +84,11 @@ contract ERC20 is Owned {
         return true;
     }
 
-    function balanceOf(address _owner) constant returns (uint balance) {
+    function balanceOf(address _owner) constant public returns (uint balance) {
         return balances[_owner];
     }
 
-    function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly returns (bool success) {
+    function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly public returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
             Approval(msg.sender, _spender, _value);
@@ -98,13 +98,13 @@ contract ERC20 is Owned {
         }
     }
 
-    function approve(address _spender, uint _value) isStartedOnly returns (bool success) {
+    function approve(address _spender, uint _value) isStartedOnly public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
     }
 
-    function allowance(address _owner, address _spender) constant returns (uint remaining) {
+    function allowance(address _owner, address _spender) constant public returns (uint remaining) {
         return allowed[_owner][_spender];
     }
 
@@ -173,3 +173,4 @@ contract JOT is ERC20 {
         return(i);
     }
 }
+
