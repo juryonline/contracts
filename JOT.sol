@@ -157,6 +157,7 @@ contract JOT is ERC20 {
     {
         totalSupply = totalSupply.add(_amount);
         balances[_to] = balances[_to].add(_amount);
+        Transfer(msg.sender, _to, _amount);
         return true;
     }
 
