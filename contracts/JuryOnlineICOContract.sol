@@ -117,7 +117,7 @@ contract ICOContract {
 
     //TODO: add check if ICOContract has tokens
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
-    function seal() only(projectWallet) notSealed() public { 
+    function seal() only(operator) notSealed() public { 
         assert(milestones.length > 0);
         //assert(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
@@ -171,6 +171,8 @@ contract ICOContract {
         //require(maximumCap >= _etherAmount + investorEther);
         //require(token.balanceOf(address(this)) >= _tokenAmount + investorTokens);
         address investContract = new InvestContract(address(this), _investor, _etherAmount, _tokenAmount);
+        pendingInvestContracts.push(investContract);
+        pendingInvestContractsIndices[investContract]=(pendingInvestContracts.length-1); //note that indices start from 1
         return(investContract);
     }
 
