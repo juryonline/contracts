@@ -16,8 +16,8 @@ contract Exchange {
     }
 
     function exchange(uint _amount) public {
-        assert(oldToken.allowance(msg.sender) >= _amount);
-        assert(oldToken.transferFrom(address(this), msg.sender, a_mount));
+        assert(oldToken.allowance(address(this), msg.sender) >= _amount);
+        assert(oldToken.transferFrom(address(this), msg.sender, _amount));
         assert(newToken.transfer(msg.sender, _amount));
     }
 
