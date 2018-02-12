@@ -1,4 +1,5 @@
 pragma solidity ^0.4.18;
+import "./ERC20Token.sol";
 
 //Jury.Online Token has been issued in November 2017, and will become transferrable after the end of ICO.
 //However for Responsible ICO operation the project needs to have tokens to be reserved at smart contract balance.

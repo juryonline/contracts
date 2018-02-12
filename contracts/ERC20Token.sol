@@ -58,11 +58,22 @@ contract Owned is Base {
 contract ERC20 is Owned {
     using SafeMath for uint;
 
+    bool public isStarted = false;
+
+    modifier isStartedOnly() {
+        require(isStarted);
+        _;
+    }
+
+    modifier isNotStartedOnly() {
+        require(!isStarted);
+        _;
+    }
+
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
 
-    //function transfer(address _to, uint _value) isStartedOnly public returns (bool success) {
-    function transfer(address _to, uint _value) public returns (bool success) {
+    function transfer(address _to, uint _value) isStartedOnly public returns (bool success) {
         require(_to != address(0));
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
@@ -70,8 +81,7 @@ contract ERC20 is Owned {
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint _value) public returns (bool success) {
-    //function transferFrom(address _from, address _to, uint _value) isStartedOnly public returns (bool success) {
+    function transferFrom(address _from, address _to, uint _value) isStartedOnly public returns (bool success) {
         require(_to != address(0));
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
@@ -84,8 +94,7 @@ contract ERC20 is Owned {
         return balances[_owner];
     }
 
-    //function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly public returns (bool success) {
-    function approve_fixed(address _spender, uint _currentValue, uint _value) public returns (bool success) {
+    function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly public returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
             Approval(msg.sender, _spender, _value);
@@ -95,8 +104,7 @@ contract ERC20 is Owned {
         }
     }
 
-    //function approve(address _spender, uint _value) isStartedOnly public returns (bool success) {
-    function approve(address _spender, uint _value) public returns (bool success) {
+    function approve(address _spender, uint _value) isStartedOnly public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
@@ -119,18 +127,6 @@ contract Token is ERC20 {
     string public symbol;
     uint8 public decimals;
 
-    bool public isStarted = false;
-
-    modifier isStartedOnly() {
-        require(isStarted);
-        _;
-    }
-
-    modifier isNotStartedOnly() {
-        require(!isStarted);
-        _;
-    }
-
 
     function Token(string _name, string _symbol, uint8 _decimals) public {
         name = _name;
@@ -138,31 +134,19 @@ contract Token is ERC20 {
         decimals = _decimals;
     }
 
-    function start()
-    public
-    only(owner)
-    isNotStartedOnly
-    {
+    function start() public only(owner) isNotStartedOnly {
         isStarted = true;
     }
 
     //================= Crowdsale Only =================
-    function mint(address _to, uint _amount) public
-    //only(owner)
-    //isNotStartedOnly
-    returns(bool)
-    {
+    function mint(address _to, uint _amount) public only(owner) isNotStartedOnly returns(bool) {
         totalSupply = totalSupply.add(_amount);
         balances[_to] = balances[_to].add(_amount);
         Transfer(msg.sender, _to, _amount);
         return true;
     }
 
-
-    function multimint(address[] dests, uint[] values) public
-    only(owner)
-    //isNotStartedOnly
-    returns (uint) {
+    function multimint(address[] dests, uint[] values) public only(owner) isNotStartedOnly returns (uint) {
         uint i = 0;
         while (i < dests.length) {
            mint(dests[i], values[i]);
@@ -172,4 +156,82 @@ contract Token is ERC20 {
     }
 }
 
+contract TokenWithoutStart is Owned {
+    using SafeMath for uint;
 
+    string public name;
+    string public symbol;
+    uint8 public decimals;
+
+    uint public totalSupply;
+
+    event Transfer(address indexed _from, address indexed _to, uint _value);
+    event Approval(address indexed _owner, address indexed _spender, uint _value);
+
+    function TokenWithoutStart(string _name, string _symbol, uint8 _decimals) public {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
+    }
+
+    function transfer(address _to, uint _value) public returns (bool success) {
+        require(_to != address(0));
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        Transfer(msg.sender, _to, _value);
+        return true;
+    }
+
+    function transferFrom(address _from, address _to, uint _value) public returns (bool success) {
+        require(_to != address(0));
+        balances[_from] = balances[_from].sub(_value);
+        balances[_to] = balances[_to].add(_value);
+        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+        Transfer(_from, _to, _value);
+        return true;
+    }
+
+    function balanceOf(address _owner) constant public returns (uint balance) {
+        return balances[_owner];
+    }
+
+    function approve_fixed(address _spender, uint _currentValue, uint _value) public returns (bool success) {
+        if(allowed[msg.sender][_spender] == _currentValue){
+            allowed[msg.sender][_spender] = _value;
+            Approval(msg.sender, _spender, _value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function approve(address _spender, uint _value) public returns (bool success) {
+        allowed[msg.sender][_spender] = _value;
+        Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    function allowance(address _owner, address _spender) constant public returns (uint remaining) {
+        return allowed[_owner][_spender];
+    }
+
+    mapping (address => uint) balances;
+    mapping (address => mapping (address => uint)) allowed;
+
+    function mint(address _to, uint _amount) public only(owner) returns(bool) {
+        totalSupply = totalSupply.add(_amount);
+        balances[_to] = balances[_to].add(_amount);
+        Transfer(msg.sender, _to, _amount);
+        return true;
+    }
+
+    function multimint(address[] dests, uint[] values) public only(owner) returns (uint) {
+        uint i = 0;
+        while (i < dests.length) {
+           mint(dests[i], values[i]);
+           i += 1;
+        }
+        return(i);
+    }
+
+}
