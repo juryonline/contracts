@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 import "./ERC20Token.sol";
-import "./InvestContract.sol";
+import "./JuryOnlineInvestContract.sol";
 
 contract ICOContract {
     

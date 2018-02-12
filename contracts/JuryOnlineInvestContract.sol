@@ -1,5 +1,5 @@
 pragma solidity ^0.4.18;
-import "./ICOContract.sol";
+import "./JuryOnlineICOContract.sol";
 import "./Pullable.sol";
 
 
@@ -76,6 +76,7 @@ contract InvestContract is TokenPullable, Pullable {
     uint public tokenAmount; //How many tokens investor wants to receive
 
     bool public disputing=false;
+    uint public amountToPay; //investAmount + commissions
     
     //Modifier that restricts function caller
     modifier only(address _sender) {
