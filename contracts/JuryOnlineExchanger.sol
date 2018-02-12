@@ -10,11 +10,16 @@ contract Exchange {
     Token public oldToken;
     Token public newToken;
 
-
     function Exchange(address _oldToken, address _newToken) public {
         oldToken = Token(_oldToken);
         newToken = Token(_newToken);
     }
 
+    function exchange(uint _amount) public {
+        require(oldToken.allowance(msg.sender) >= amount);
+        require(oldToken.transferFrom(address(this), msg.sender, amount));
+        require(newToken.transfer(msg.sender, amount));
+
+    }
 
 }
