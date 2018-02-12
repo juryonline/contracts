@@ -2,6 +2,8 @@ pragma solidity ^0.4.18;
 import "./ICOContract.sol";
 import "./Pullable.sol";
 
+
+//Asynchronous send is used both for sending the Ether and tokens.
 contract TokenPullable {
   using SafeMath for uint256;
   Token public token;
@@ -95,10 +97,16 @@ contract InvestContract is TokenPullable, Pullable {
         tokenAmount = _tokenAmount;
         projectWallet = icoContract.projectWallet();
         investor = _investor;
+        amountToPay = etherAmount*101/100; //101% of the agreed amount
         quorum = 3;
-        //addReserveArbiter(juryOnlineArbiter) //to prevent freeze of money
-        //addReserveArbiter(juryOnlineArbiter) //to prevent freeze of money
-        arbiterAcceptCount = 3;
+        //hardcoded arbiters
+        //addAcceptedArbiter(0x42efbba0563ae5aa2312bebce1c18c6722b67857) Ryan
+        //addAcceptedArbiter(0x37D5953c24a2efD372C97B06f22416b68e896eaf) Maxim Telegin
+        //addAcceptedArbiter(0xd0D2e05Fd34d566612529512F7Af1F8a60EDAb6C) Vladimir Dyakin
+        //addAcceptedArbiter(0xB6508aFaCe815e481bf3B3Fa9B4117D46C963Ec3) Immánuel Fodor
+        //addAcceptedArbiter(0x3e134C5dAf56e0e28bd04beD46969Bd516932f02) Alex
+
+        arbiterAcceptCount = 5;
 
 		uint milestoneEtherAmount; //How much Ether does investor send for a milestone
 		uint milestoneTokenAmount; //How many Tokens does investor receive for a milestone
@@ -123,10 +131,25 @@ contract InvestContract is TokenPullable, Pullable {
 
     function() payable public only(investor) { 
         require(arbiterAcceptCount >= quorum);
-        //require(msg.value == needPay);
-        //require(getCurrentMilestone() == 0); //before first
+        require(msg.value == amountToPay);
+        require(getCurrentMilestone() == 0); //before first
         icoContract.investContractDeposited();
     } 
+
+    //Adding an arbiter which has already accepted his participation in ICO.
+    function addAcceptedArbiter(address _arbiter, uint _delay) internal {
+        require(token.balanceOf(address(this))==0); //only callable when there are no tokens at this contract
+        require(_delay > 0); //to differ from non-existent arbiters
+        var index = arbiterList.push(_arbiter);
+        arbiters[_arbiter] = ArbiterInfo(index, true, _delay);
+    }
+
+    /* Not used for our own ICO as arbiters are the same and already accepted their participation
+    function arbiterAccept() public onlyArbiter {
+        require(!arbiters[msg.sender].accepted);
+        arbiters[msg.sender].accepted = true;
+        arbiterAcceptCount += 1;
+    }
 
     function addArbiter(address _arbiter, uint _delay) public {
         //only(investor)
@@ -136,20 +159,9 @@ contract InvestContract is TokenPullable, Pullable {
         arbiters[_arbiter] = ArbiterInfo(index, false, _delay);
     }
 
-    function addReserveArbiter(address _arbiter, uint _delay) internal {
-        require(_delay > 0); //to differ from non-existent arbiters
-        var index = arbiterList.push(_arbiter);
-        arbiters[_arbiter] = ArbiterInfo(index, true, _delay);
-    }
+   */
 
-    function arbiterAccept() public onlyArbiter {
-        require(!arbiters[msg.sender].accepted);
-        arbiters[msg.sender].accepted = true;
-        arbiterAcceptCount += 1;
-    }
-
-    function vote(address _voteAddress) public onlyArbiter 
-    {   
+    function vote(address _voteAddress) public onlyArbiter {   
         require(_voteAddress == investor || _voteAddress == projectWallet);
         require(disputing);
         uint milestone = getCurrentMilestone();
@@ -167,12 +179,10 @@ contract InvestContract is TokenPullable, Pullable {
         }
 
         if (disputes[milestone].votesProject >= quorum) {
-            //executeVerdict(milestone);
             executeVerdict(true);
         }
         if (disputes[milestone].votesInvestor >= quorum) {
             executeVerdict(false);
-            //executeVerdict(milestone);
         }
     }
 
@@ -187,7 +197,6 @@ contract InvestContract is TokenPullable, Pullable {
             //token.transfer(address(icoContract), token.balanceOf(this)); // send all tokens back
         }
     }
-
 
     function openDispute(string _reason) public only(investor) {
         assert(!disputing);
