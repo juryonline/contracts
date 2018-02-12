@@ -13,6 +13,8 @@ contract ICOContract {
 
     address[] public investContracts = [0x0]; // accepted InvestContracts
     mapping(address => uint) public investContractsIndices;
+
+    uint public minimalInvestment = 5 ether;
     
     uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
@@ -163,6 +165,7 @@ contract ICOContract {
         sealed only(projectWallet)
         returns(address)
     {
+        require(_etherAmount >= minimalInvestment);
         //require(milestones[0].startTime - now >= 5 days);
         //require(maximumCap >= _etherAmount + investorEther);
         //require(token.balanceOf(address(this)) >= _tokenAmount + investorTokens);

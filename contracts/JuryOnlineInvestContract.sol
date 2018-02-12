@@ -74,7 +74,6 @@ contract InvestContract is TokenPullable, Pullable {
     uint public tokenAmount; //How many tokens investor wants to receive
 
     bool public disputing=false;
-    bool public accepted=false; //indicates whether projectWallet has called accept() 
     
     //Modifier that restricts function caller
     modifier only(address _sender) {
@@ -124,7 +123,6 @@ contract InvestContract is TokenPullable, Pullable {
 
     function() payable public only(investor) { 
         require(arbiterAcceptCount >= quorum);
-        require(accepted);
         //require(msg.value == needPay);
         //require(getCurrentMilestone() == 0); //before first
         icoContract.investContractDeposited();
@@ -186,7 +184,6 @@ contract InvestContract is TokenPullable, Pullable {
         } else  {
 		//asyncTokenSend(investor, tokensToSend);
 		//asyncSend(projectWallet, etherToSend);
-            //claims[investor]+=this.balance;
             //token.transfer(address(icoContract), token.balanceOf(this)); // send all tokens back
         }
     }
@@ -214,10 +211,6 @@ contract InvestContract is TokenPullable, Pullable {
 
     function getCurrentMilestone() public constant returns(uint) {
         return icoContract.getCurrentMilestone();
-    }
-
-    function accept() public only(projectWallet) {
-        accepted = true;
     }
 
 }
