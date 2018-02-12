@@ -4,7 +4,8 @@ import "./InvestContract.sol";
 
 contract ICOContract {
     
-    address public projectWallet; //address of the project developer
+    address public projectWallet; //beneficiary wallet
+    address public operator = 0x2ba366D91789e54F6b5019f752E5497374bd0dE8; //address of the ICO operator — the one who adds milestones and InvestContracts
 
     uint public constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
@@ -84,7 +85,7 @@ contract ICOContract {
     /// @param _description description of added milestone
     /// @param _result result description of added milestone
     function addMilestone(uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description, string _result)        
-    notSealed only(projectWallet)
+    notSealed only(operator)
     public returns(uint) {
         totalEther += _etherAmount;
         totalToken += _tokenAmount;
@@ -101,7 +102,7 @@ contract ICOContract {
     /// @param _description description of the milestone
     /// @param _results result description of the milestone
     function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description, string _results) 
-    notSealed only(projectWallet)
+    notSealed only(operator)
     public {
         require(_id < milestones.length);
         totalEther = totalEther - milestones[_id].etherAmount + _etherAmount;
@@ -124,13 +125,13 @@ contract ICOContract {
         tokenLeft = totalToken;
     }
 
-    function finishMilestone(string _results) only(projectWallet) public {
+    function finishMilestone(string _results) only(operator) public {
         var milestone = getCurrentMilestone();
         milestones[milestone].finishTime = now;
         milestones[milestone].results = _results;
     }
 
-    function startNextMilestone() public only(projectWallet) {
+    function startNextMilestone() public only(operator) {
         uint milestone = getCurrentMilestone();
         require(milestones[currentMilestone].finishTime != 0);
         require(now > milestones[currentMilestone].finishTime + waitPeriod);
@@ -162,7 +163,7 @@ contract ICOContract {
 
     ///InvestContract part
     function createInvestContract(address _investor, uint _etherAmount, uint _tokenAmount) public 
-        sealed only(projectWallet)
+        sealed only(operator)
         returns(address)
     {
         require(_etherAmount >= minimalInvestment);
