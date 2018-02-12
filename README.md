@@ -13,14 +13,14 @@ In fact the differences are:
 # Jury.Online Token
 
 Jury.Online Token contract address: 0xdb455c71c1bc2de4e80ca451184041ef32054001.
-[https://etherscan.io/token/0xdb455c71c1bc2de4e80ca451184041ef32054001]
+[Link to etherscan](https://etherscan.io/token/0xdb455c71c1bc2de4e80ca451184041ef32054001)
 
 
 For responsible ICO we issued another token which later (after the original one becomes transferrable by the end of ICO)
 can be exchanged for the original in 1:1 rate.
 
-Jury.Online Token for Responsible ICO (JOTR)
-[https://etherscan.io/token/0x9070e2fDb61887c234D841c95D1709288EBbB9a0]
+Jury.Online Token for Responsible ICO (JOTR) contract address: 0x9070e2fDb61887c234D841c95D1709288EBbB9a0
+[Link to etherscan](https://etherscan.io/token/0x9070e2fDb61887c234D841c95D1709288EBbB9a0)
 
 # License 
 
