@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.16;
 
 library SafeMath {
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -7,19 +7,19 @@ library SafeMath {
     return c;
   }
 
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+  function div(uint256 a, uint256 b) internal  pure returns (uint256) {
     // assert(b > 0); // Solidity automatically throws when dividing by 0
     uint256 c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
 
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+  function sub(uint256 a, uint256 b) internal  pure returns (uint256) {
     assert(b <= a);
     return a - b;
   }
 
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+  function add(uint256 a, uint256 b) internal pure  returns (uint256) {
     uint256 c = a + b;
     assert(c >= a);
     return c;
@@ -61,22 +61,18 @@ contract ERC20 is Owned {
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
 
-    function transfer(address _to, uint _value) isStartedOnly public returns (bool success) {
+    //function transfer(address _to, uint _value) isStartedOnly public returns (bool success) {
+    function transfer(address _to, uint _value) public returns (bool success) {
         require(_to != address(0));
-        require(_value <= balances[msg.sender]);
-    
-        // SafeMath.sub will throw if there is not enough balance.
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
         Transfer(msg.sender, _to, _value);
         return true;
     }
 
-    function transferFrom(address _from, address _to, uint _value) isStartedOnly public returns (bool success) {
+    function transferFrom(address _from, address _to, uint _value) public returns (bool success) {
+    //function transferFrom(address _from, address _to, uint _value) isStartedOnly public returns (bool success) {
         require(_to != address(0));
-        require(_value <= balances[_from]);
-        require(_value <= allowed[_from][msg.sender]);
-    
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
@@ -88,7 +84,8 @@ contract ERC20 is Owned {
         return balances[_owner];
     }
 
-    function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly public returns (bool success) {
+    //function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly public returns (bool success) {
+    function approve_fixed(address _spender, uint _currentValue, uint _value) public returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
             Approval(msg.sender, _spender, _value);
@@ -98,7 +95,8 @@ contract ERC20 is Owned {
         }
     }
 
-    function approve(address _spender, uint _value) isStartedOnly public returns (bool success) {
+    //function approve(address _spender, uint _value) isStartedOnly public returns (bool success) {
+    function approve(address _spender, uint _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         Approval(msg.sender, _spender, _value);
         return true;
@@ -112,33 +110,32 @@ contract ERC20 is Owned {
     mapping (address => mapping (address => uint)) allowed;
 
     uint public totalSupply;
-    bool    public isStarted = false;
+}
+
+contract Token is ERC20 {
+    using SafeMath for uint;
+
+    string public name;
+    string public symbol;
+    uint8 public decimals;
+
+    bool public isStarted = false;
 
     modifier isStartedOnly() {
         require(isStarted);
         _;
     }
 
-}
-
-contract JOT is ERC20 {
-    using SafeMath for uint;
-
-    string public name = "Jury.Online Token";
-    string public symbol = "JOT";
-    uint8 public decimals = 18;
-
     modifier isNotStartedOnly() {
         require(!isStarted);
         _;
     }
 
-    function getTotalSupply()
-    public
-    constant
-    returns(uint)
-    {
-        return totalSupply;
+
+    function Token(string _name, string _symbol, uint8 _decimals) public {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
     }
 
     function start()
@@ -151,8 +148,8 @@ contract JOT is ERC20 {
 
     //================= Crowdsale Only =================
     function mint(address _to, uint _amount) public
-    only(owner)
-    isNotStartedOnly
+    //only(owner)
+    //isNotStartedOnly
     returns(bool)
     {
         totalSupply = totalSupply.add(_amount);
@@ -164,7 +161,7 @@ contract JOT is ERC20 {
 
     function multimint(address[] dests, uint[] values) public
     only(owner)
-    isNotStartedOnly
+    //isNotStartedOnly
     returns (uint) {
         uint i = 0;
         while (i < dests.length) {
@@ -174,4 +171,5 @@ contract JOT is ERC20 {
         return(i);
     }
 }
+
 

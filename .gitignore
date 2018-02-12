@@ -1,0 +1,7 @@
+*.swp
+models/__pycache__
+__pycache__
+restapi/node_modules
+build/
+abi/
+*.abi
