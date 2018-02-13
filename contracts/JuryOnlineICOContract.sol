@@ -5,9 +5,9 @@ import "./JuryOnlineInvestContract.sol";
 contract ICOContract {
     
     address public projectWallet; //beneficiary wallet
-    address public operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
+    address operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
 
-    uint public constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
+    uint constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
     address[] public pendingInvestContracts = [0x0]; //pending InvestContracts not yet accepted by the project
     mapping(address => uint) public pendingInvestContractsIndices;
@@ -15,19 +15,19 @@ contract ICOContract {
     address[] public investContracts = [0x0]; // accepted InvestContracts
     mapping(address => uint) public investContractsIndices;
 
-    uint public minimalInvestment = 5 ether;
+    uint minimalInvestment = 5 ether;
     
     uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
 
-    uint public tokenLeft;
-    uint public etherLeft;
+    uint tokenLeft;
+    uint etherLeft;
 
     Token public token;
     
     ///ICO caps
-    uint public minimumCap; // set in constructor
-    uint public maximumCap;  // set in constructor
+    uint minimumCap; // set in constructor
+    uint maximumCap;  // set in constructor
 
     //Structure for milestone
     struct Milestone {
@@ -42,7 +42,7 @@ contract ICOContract {
 
     Milestone[] public milestones;
     uint public currentMilestone;
-    uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
+    uint sealTimestamp; //Until when it's possible to add new and change existing milestones
 
     
     modifier only(address _sender) {

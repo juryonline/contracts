@@ -37,7 +37,7 @@ contract TokenPullable {
 
 contract InvestContract is TokenPullable, Pullable {
 
-    address public projectWallet; // person from ico team
+    address projectWallet; // person from ico team
     address public investor; 
 
     uint public arbiterAcceptCount;
@@ -46,8 +46,8 @@ contract InvestContract is TokenPullable, Pullable {
     ICOContract public icoContract;
     //Token public token;
 
-    uint[] public etherPartition; //weis 
-    uint[] public tokenPartition; //tokens
+    uint[] etherPartition; //weis 
+    uint[] tokenPartition; //tokens
 
     //Each arbiter has parameter delay which equals time interval in seconds betwwen dispute open and when the arbiter can vote
     struct ArbiterInfo { 
@@ -153,11 +153,9 @@ contract InvestContract is TokenPullable, Pullable {
         disputes[milestone].voters[disputes[milestone].votesProject+disputes[milestone].votesInvestor] = msg.sender;
         if (_voteAddress == projectWallet) {
             disputes[milestone].votesProject += 1;
-        } else if (_voteAddress == investor) {
+        } else {
             disputes[milestone].votesInvestor += 1;
-        } else { 
-            revert();
-        }
+        } 
 
         if (disputes[milestone].votesProject >= quorum) {
             executeVerdict(true);
@@ -195,7 +193,7 @@ contract InvestContract is TokenPullable, Pullable {
     }
 
     function getCurrentMilestone() public constant returns(uint) {
-        return icoContract.getCurrentMilestone();
+        return icoContract.currentMilestone();
     }
 
 }
