@@ -101,11 +101,11 @@ contract InvestContract is TokenPullable, Pullable {
         amountToPay = etherAmount*101/100; //101% of the agreed amount
         quorum = 3;
         //hardcoded arbiters
-        addAcceptedArbiter(0x42efbba0563ae5aa2312bebce1c18c6722b67857); //Ryan
-        addAcceptedArbiter(0x37D5953c24a2efD372C97B06f22416b68e896eaf);// Maxim Telegin
-        addAcceptedArbiter(0xd0D2e05Fd34d566612529512F7Af1F8a60EDAb6C);// Vladimir Dyakin
-        addAcceptedArbiter(0xB6508aFaCe815e481bf3B3Fa9B4117D46C963Ec3);// Immánuel Fodor
-        addAcceptedArbiter(0x73380dc12B629FB7fBD221E05D25E42f5f3FAB11);// Alban
+        addAcceptedArbiter(0x42efbba0563ae5aa2312bebce1c18c6722b67857, 1); //Ryan
+        addAcceptedArbiter(0x37D5953c24a2efD372C97B06f22416b68e896eaf, 1);// Maxim Telegin
+        addAcceptedArbiter(0xd0D2e05Fd34d566612529512F7Af1F8a60EDAb6C, 1);// Vladimir Dyakin
+        addAcceptedArbiter(0xB6508aFaCe815e481bf3B3Fa9B4117D46C963Ec3, 1);// Immánuel Fodor
+        addAcceptedArbiter(0x73380dc12B629FB7fBD221E05D25E42f5f3FAB11, 1);// Alban
 
         arbiterAcceptCount = 5;
 

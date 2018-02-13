@@ -89,8 +89,7 @@ contract ICOContract {
     public returns(uint) {
         totalEther += _etherAmount;
         totalToken += _tokenAmount;
-        uint x;
-        return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, x, _duration, _description, _result));
+        return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description, _result));
     }
 
     /// @dev Edits milestone by given id and new parameters.
