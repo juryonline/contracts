@@ -101,11 +101,11 @@ contract InvestContract is TokenPullable, Pullable {
         amountToPay = etherAmount*101/100; //101% of the agreed amount
         quorum = 3;
         //hardcoded arbiters
-        addAcceptedArbiter(0x42efbba0563ae5aa2312bebce1c18c6722b67857, 1); //Ryan
-        addAcceptedArbiter(0x37D5953c24a2efD372C97B06f22416b68e896eaf, 1);// Maxim Telegin
-        addAcceptedArbiter(0xd0D2e05Fd34d566612529512F7Af1F8a60EDAb6C, 1);// Vladimir Dyakin
-        addAcceptedArbiter(0xB6508aFaCe815e481bf3B3Fa9B4117D46C963Ec3, 1);// Immánuel Fodor
-        addAcceptedArbiter(0x73380dc12B629FB7fBD221E05D25E42f5f3FAB11, 1);// Alban
+        addAcceptedArbiter(0xB69945E2cB5f740bAa678b9A9c5609018314d950, 1); //Valery
+        addAcceptedArbiter(0x82ba96680D2b790455A7Eee8B440F3205B1cDf1a, 1); //Valery
+        addAcceptedArbiter(0x5de277bD814d95C47382CCc00718cAD3FD885c26, 1); //Valery
+        addAcceptedArbiter(0x4C67EB86d70354731f11981aeE91d969e3823c39, 1); //Alex
+        addAcceptedArbiter(0x2ba366D91789e54F6b5019f752E5497374bd0dE8, 1); //Alex
 
         arbiterAcceptCount = 5;
 
@@ -145,23 +145,6 @@ contract InvestContract is TokenPullable, Pullable {
         arbiters[_arbiter] = ArbiterInfo(index, true, _delay);
     }
 
-    /* Not used for our own ICO as arbiters are the same and already accepted their participation
-    function arbiterAccept() public onlyArbiter {
-        require(!arbiters[msg.sender].accepted);
-        arbiters[msg.sender].accepted = true;
-        arbiterAcceptCount += 1;
-    }
-
-    function addArbiter(address _arbiter, uint _delay) public {
-        //only(investor)
-        require(token.balanceOf(address(this))==0); //only callable when there are no tokens at this contract
-        require(_delay > 0); //to differ from non-existent arbiters
-        var index = arbiterList.push(_arbiter);
-        arbiters[_arbiter] = ArbiterInfo(index, false, _delay);
-    }
-
-   */
-
     function vote(address _voteAddress) public onlyArbiter {   
         require(_voteAddress == investor || _voteAddress == projectWallet);
         require(disputing);
@@ -188,15 +171,12 @@ contract InvestContract is TokenPullable, Pullable {
     }
 
     function executeVerdict(bool _projectWon) internal {
-        //uint milestone = getCurrentMilestone();
         disputing = false;
-        if (_projectWon) {
-            //token.transfer(0x0, token.balanceOf(address(this)));
-        } else  {
-		//asyncTokenSend(investor, tokensToSend);
-		//asyncSend(projectWallet, etherToSend);
-            //token.transfer(address(icoContract), token.balanceOf(this)); // send all tokens back
+        if (!_projectWon) {
+            asyncSend(investor, balance(address(this));
+            token.transfer(address(icoContract), token.balanceOf(this)); // send all tokens back
         }
+        //if project won then implementation proceeds
     }
 
     function openDispute(string _reason) public only(investor) {
@@ -213,10 +193,8 @@ contract InvestContract is TokenPullable, Pullable {
 		var etherToSend = etherPartition[_milestone];
 		var tokensToSend = tokenPartition[_milestone];
 
-		//async send
-		asyncSend(projectWallet, etherToSend);
+		asyncSend(projectWallet, etherToSend); //async send
 		asyncTokenSend(investor, tokensToSend);
-
     }
 
     function getCurrentMilestone() public constant returns(uint) {

@@ -143,14 +143,6 @@ contract ICOContract {
 
     ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
     function getCurrentMilestone() public constant returns(uint) {
-        /*
-        for(uint i=0; i < milestones.length; i++) { 
-            if (milestones[i].startTime <= now && now <= milestones[i].finishTime + waitPeriod) {
-                return i+1;
-            }
-        }
-        return 0;
-       */
         return currentMilestone;
     }
    
