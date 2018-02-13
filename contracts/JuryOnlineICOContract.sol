@@ -46,17 +46,17 @@ contract ICOContract {
 
     
     modifier only(address _sender) {
-        require(msg.sender == _sender);
+        assert(msg.sender == _sender);
         _;
     }
 
     modifier notSealed() {
-        require(now <= sealTimestamp);
+        assert(now <= sealTimestamp);
         _;
     }
 
     modifier sealed() {
-        require(now > sealTimestamp);
+        assert(now > sealTimestamp);
         _;
     }
 
@@ -103,7 +103,7 @@ contract ICOContract {
     function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description, string _results) 
     notSealed only(operator)
     public {
-        require(_id < milestones.length);
+        assert(_id < milestones.length);
         totalEther = totalEther - milestones[_id].etherAmount + _etherAmount;
         totalToken = totalToken - milestones[_id].tokenAmount + _tokenAmount;
         milestones[_id].etherAmount = _etherAmount;
@@ -125,19 +125,17 @@ contract ICOContract {
     }
 
     function finishMilestone(string _results) only(operator) public {
-        var milestone = getCurrentMilestone();
-        milestones[milestone].finishTime = now;
-        milestones[milestone].results = _results;
+        milestones[currentMilestone].finishTime = now;
+        milestones[currentMilestone].results = _results;
     }
 
     function startNextMilestone() public only(operator) {
-        uint milestone = getCurrentMilestone();
-        require(milestones[currentMilestone].finishTime == 0);
+        assert(milestones[currentMilestone].finishTime == 0);
         currentMilestone +=1;
         milestones[currentMilestone].startTime = now;
         for(uint i=1; i < investContracts.length; i++) {
                 InvestContract investContract =  InvestContract(investContracts[i]); 
-                investContract.milestoneStarted(milestone);
+                investContract.milestoneStarted(currentMilestone-1);
         }
     }
 
@@ -186,10 +184,12 @@ contract ICOContract {
         assert(token.transfer(msg.sender, investmentToken)); 
     }
 
+    /*
     function returnTokens() public only(operator) {
         uint balance = token.balanceOf(address(this));
         token.transfer(projectWallet, balance);
     }
+   */
 
 }
 
