@@ -5,7 +5,7 @@ import "./JuryOnlineInvestContract.sol";
 contract ICOContract {
     
     address public projectWallet; //beneficiary wallet
-    address public operator = 0x2ba366D91789e54F6b5019f752E5497374bd0dE8; //address of the ICO operator — the one who adds milestones and InvestContracts
+    address public operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
 
     uint public constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
@@ -133,8 +133,7 @@ contract ICOContract {
 
     function startNextMilestone() public only(operator) {
         uint milestone = getCurrentMilestone();
-        require(milestones[currentMilestone].finishTime != 0);
-        require(now > milestones[currentMilestone].finishTime + waitPeriod);
+        require(milestones[currentMilestone].finishTime == 0);
         currentMilestone +=1;
         milestones[currentMilestone].startTime = now;
         for(uint i=1; i < investContracts.length; i++) {
@@ -194,6 +193,11 @@ contract ICOContract {
         etherLeft -= investmentEther;
         tokenLeft -= investmentToken;
         assert(token.transfer(msg.sender, investmentToken)); 
+    }
+
+    function returnTokens() public only(operator) {
+        uint balance = token.balanceOf(address(this));
+        token.transfer(projectWallet, balance);
     }
 
 }
