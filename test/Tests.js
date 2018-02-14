@@ -171,7 +171,34 @@ contract('ICOContract', function(accounts) {
         //await investContract.withdrawPayment({from: projectWallet});
         //balanceAfterSend = web3.eth.getBalance(projectWallet);
         //assert.equal(balanceAfterSend.toNumber(), balanceBeforeSend.toNumber()+gas+part0.toNumber()+part1.toNumber(), "Project wallet hasn't withdrawn correct amount of Ether");
+    });
+    it('Opening a dispute', async function() {
+        await investContract.openDispute("dispute", {from: investor});
+        disputing = await investContract.disputing();
+        assert.equal(disputing, true, 'Dispute has not opened');
+    });
+    it('Voting', async function() {
+        toWithdraw = await investContract.payments(investor);
+        //console.log(toWithdraw.toNumber())
 
+        //assert.equal(toWithdraw.toNumber(), part0.toNumber()+part1.toNumber());
+        index = await icoContract.investContractsIndices.call(investContract.address);
+        console.log(index.valueOf())
+
+        await investContract.vote(investor, {from: accounts[5]});
+        await investContract.vote(investor, {from: accounts[6]});
+        await investContract.vote(investor, {from: accounts[7]});
+
+        disputing = await investContract.disputing();
+        //assert.equal(disputing, false, 'Dispute has not been resolved');
+
+        index = await icoContract.investContractsIndices.call(investContract.address);
+        console.log(index.valueOf())
+
+        toWithdraw = await investContract.payments(investor);
+        //console.log(toWithdraw.toNumber())
+        //toWithdraw = await investContract.payments(projectWallet);
+        //assert.equal(toWithdraw.toNumber(), part0.toNumber()+part1.toNumber());
     });
 
 });
