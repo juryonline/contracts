@@ -5,7 +5,9 @@ import "./JuryOnlineInvestContract.sol";
 contract ICOContract {
     
     address public projectWallet; //beneficiary wallet
-    address operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
+    address operator;
+
+    //address operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
 
     uint constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
@@ -15,7 +17,7 @@ contract ICOContract {
     address[] public investContracts = [0x0]; // accepted InvestContracts
     mapping(address => uint) public investContractsIndices;
 
-    uint minimalInvestment = 5 ether;
+    uint public minimalInvestment = 0 ether;
     
     uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
@@ -42,7 +44,8 @@ contract ICOContract {
 
     Milestone[] public milestones;
     uint public currentMilestone;
-    uint sealTimestamp; //Until when it's possible to add new and change existing milestones
+    uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
+    //uint sealTimestamp; //Until when it's possible to add new and change existing milestones
 
     
     modifier only(address _sender) {
@@ -67,7 +70,8 @@ contract ICOContract {
     /// @param _minimumCap Wei value of minimum cap for responsible ICO
     /// @param _maximumCap Wei value of maximum cap for responsible ICO
     function ICOContract(address _tokenAddress, address _projectWallet, uint _sealTimestamp, uint _minimumCap,
-                         uint _maximumCap) public {
+                         uint _maximumCap, address _operator) public {
+        operator = _operator;
         token = Token(_tokenAddress);
         projectWallet = _projectWallet;
         sealTimestamp = _sealTimestamp;
@@ -117,7 +121,7 @@ contract ICOContract {
     //TODO: add check if ICOContract has tokens
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
     function seal() only(operator) notSealed() public { 
-        assert(milestones.length > 0);
+        assert(milestones.length > 1); //Has to have at least 2 milestones
         //assert(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
         etherLeft = totalEther;
@@ -125,18 +129,20 @@ contract ICOContract {
     }
 
     function finishMilestone(string _results) only(operator) public {
-        milestones[currentMilestone].finishTime = now;
-        milestones[currentMilestone].results = _results;
+        //assert(milestones[currentMilestone-1].finishTime == 0);//can be called only once
+        milestones[currentMilestone-1].finishTime = now;
+        milestones[currentMilestone-1].results = _results;
     }
 
     function startNextMilestone() public only(operator) {
-        assert(milestones[currentMilestone].finishTime == 0);
-        currentMilestone +=1;
-        milestones[currentMilestone].startTime = now;
+        assert(currentMilestone != milestones.length); //checking if final milestone. There should be more than 1 milestone in the project
+        assert(milestones[currentMilestone].finishTime == 0);//milestone has to be finished before the new one starts
+        milestones[currentMilestone].startTime = now; //setting the of the next milestone
         for(uint i=1; i < investContracts.length; i++) {
                 InvestContract investContract =  InvestContract(investContracts[i]); 
-                investContract.milestoneStarted(currentMilestone-1);
+                investContract.milestoneStarted(currentMilestone);
         }
+        currentMilestone +=1;
     }
 
     ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
@@ -151,7 +157,8 @@ contract ICOContract {
 
     ///InvestContract part
     function createInvestContract(address _investor, uint _etherAmount, uint _tokenAmount) public 
-        sealed only(operator)
+        //sealed
+        only(operator)
         returns(address)
     {
         require(_etherAmount >= minimalInvestment);
@@ -173,6 +180,7 @@ contract ICOContract {
         InvestContract investContract = InvestContract(pendingInvestContracts[index]);
         pendingInvestContracts[index] = pendingInvestContracts[len-1];
         pendingInvestContracts.length = len-1;
+        delete pendingInvestContractsIndices[msg.sender];
         investContracts.push(msg.sender);
         investContractsIndices[msg.sender]=investContracts.length-1; //note that indexing starts from 1
 
@@ -184,12 +192,10 @@ contract ICOContract {
         assert(token.transfer(msg.sender, investmentToken)); 
     }
 
-    /*
     function returnTokens() public only(operator) {
         uint balance = token.balanceOf(address(this));
         token.transfer(projectWallet, balance);
     }
-   */
 
 }
 
