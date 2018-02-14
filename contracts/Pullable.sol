@@ -36,3 +36,35 @@ contract Pullable {
     payments[_destination] = payments[_destination].add(_amount);
   }
 }
+
+//Asynchronous send is used both for sending the Ether and tokens.
+contract TokenPullable {
+  using SafeMath for uint256;
+  Token public token;
+
+  mapping(address => uint256) public tokenPayments;
+
+  function TokenPullable(address _token) public {
+      token = Token(_token);
+  }
+
+  /**
+  * @dev withdraw accumulated balance, called by payee.
+  */
+  function withdrawTokenPayment() public {
+    address tokenPayee = msg.sender;
+    uint256 tokenPayment = tokenPayments[tokenPayee];
+
+    require(tokenPayment != 0);
+    require(token.balanceOf(address(this)) >= tokenPayment);
+
+    tokenPayments[tokenPayee] = 0;
+
+    assert(token.transfer(tokenPayee, tokenPayment));
+  }
+
+  function asyncTokenSend(address _destination, uint _amount) internal {
+    tokenPayments[_destination] = tokenPayments[_destination].add(_amount);
+  }
+}
+
