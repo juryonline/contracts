@@ -141,7 +141,7 @@ contract('ICOContract', function(accounts) {
         } catch(e) {
             true
         }
-        assert.notEqual(web3.eth.getBalance(investContractAddress2), Math.floor(etherAmount*10*1.01), '2nd invest contract has not received correct amount of Ether');
+        assert.notEqual(web3.eth.getBalance(investContractAddress2).toNumber(), Math.floor(etherAmount*10*1.01), '2nd invest contract has not received correct amount of Ether');
     });
 
     it('Starting milestone', async function() {
