@@ -69,6 +69,7 @@ contract ICOContract {
     /// @param _sealTimestamp Until this timestamp it's possible to alter milestones
     /// @param _minimumCap Wei value of minimum cap for responsible ICO
     /// @param _maximumCap Wei value of maximum cap for responsible ICO
+    /// @param _operator ICO operator, the person who adds, starts, and finishes milestones; creates InvestContracts 
     function ICOContract(address _tokenAddress, address _projectWallet, uint _sealTimestamp, uint _minimumCap,
                          uint _maximumCap, address _operator) public {
         operator = _operator;
