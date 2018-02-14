@@ -157,7 +157,7 @@ contract ICOContract {
 
     ///InvestContract part
     function createInvestContract(address _investor, uint _etherAmount, uint _tokenAmount) public 
-        //sealed
+        sealed
         only(operator)
         returns(address)
     {
