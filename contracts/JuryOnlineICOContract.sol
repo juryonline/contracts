@@ -193,6 +193,16 @@ contract ICOContract {
         assert(token.transfer(msg.sender, investmentToken)); 
     }
 
+    function deleteInvestContract() public {
+        uint index = investContractsIndices[msg.sender];
+        assert(index > 0);
+        uint len = investContracts.length;
+        //InvestContract investContract = InvestContract(investContracts[index]);
+        investContracts[index] = investContracts[len-1];
+        investContracts.length = len-1;
+        delete investContractsIndices[msg.sender];
+    }
+
     function returnTokens() public only(operator) {
         uint balance = token.balanceOf(address(this));
         token.transfer(projectWallet, balance);

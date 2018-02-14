@@ -151,10 +151,11 @@ contract InvestContract is TokenPullable, Pullable {
         assert(disputing);
         uint milestone = getCurrentMilestone();
         assert(milestone > 0);
-        assert(disputes[milestone].votes[msg.sender] == 0); 
-        assert(now - disputes[milestone].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
-        disputes[milestone].votes[msg.sender] = _voteAddress;
-        disputes[milestone].voters[disputes[milestone].votesProject+disputes[milestone].votesInvestor] = msg.sender;
+        assert(disputes[milestone-1].votes[msg.sender] == 0); 
+        //assert(now - disputes[milestone-1].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
+        assert(now - disputes[milestone-1].timestamp >= 0); //test network poorly handles time 
+        disputes[milestone-1].votes[msg.sender] = _voteAddress;
+        disputes[milestone-1].voters[disputes[milestone-1].votesProject+disputes[milestone-1].votesInvestor] = msg.sender;
         if (_voteAddress == projectWallet) {
             disputes[milestone].votesProject += 1;
         } else {
@@ -167,15 +168,18 @@ contract InvestContract is TokenPullable, Pullable {
         if (disputes[milestone].votesInvestor >= quorum) {
             executeVerdict(false);
         }
+        /*
+       */
     }
 
     function executeVerdict(bool _projectWon) internal {
-        disputing = false;
         if (!_projectWon) {
             asyncSend(investor, (address(this)).balance);
             token.transfer(address(icoContract), token.balanceOf(address(this))); // send all tokens back
+            icoContract.deleteInvestContract();
+        } else {//if project won then implementation proceed
+            disputing = false;
         }
-        //if project won then implementation proceeds
     }
 
     function openDispute(string _reason) public only(investor) {
@@ -183,8 +187,8 @@ contract InvestContract is TokenPullable, Pullable {
         var milestone = getCurrentMilestone();
         assert(milestone > 0);
         disputing = true;
-        disputes[milestone].timestamp = now;
-        disputes[milestone].reason = _reason;
+        disputes[milestone-1].timestamp = now;
+        disputes[milestone-1].reason = _reason;
     }
 
 	function milestoneStarted(uint _milestone) public only(address(icoContract)) {
