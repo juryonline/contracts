@@ -38,16 +38,16 @@ contract TokenPullable {
 contract InvestContract is TokenPullable, Pullable {
 
     address projectWallet; // person from ico team
-    address public investor; 
+    address investor; 
 
-    uint public arbiterAcceptCount;
-    uint public quorum;
+    uint arbiterAcceptCount;
+    uint quorum;
 
     ICOContract public icoContract;
     //Token public token;
 
-    uint[] public etherPartition; //weis 
-    uint[] public tokenPartition; //tokens
+    uint[] etherPartition; //weis 
+    uint[] tokenPartition; //tokens
 
     //Each arbiter has parameter delay which equals time interval in seconds betwwen dispute open and when the arbiter can vote
     struct ArbiterInfo { 
@@ -57,7 +57,7 @@ contract InvestContract is TokenPullable, Pullable {
     }
 
     mapping(address => ArbiterInfo) public arbiters; //arbiterAddress => ArbiterInfo{acceptance, voteDelay}
-    address[] public arbiterList = [0x0]; //it's needed to show complete arbiter list
+    address[] arbiterList = [0x0]; //it's needed to show complete arbiter list
 
     //this structure can be optimized
     struct Dispute {
@@ -98,13 +98,13 @@ contract InvestContract is TokenPullable, Pullable {
         projectWallet = icoContract.projectWallet();
         investor = _investor;
         amountToPay = etherAmount*101/100; //101% of the agreed amount
-        quorum = 3;
+        quorum = 2;
         //hardcoded arbiters
-        addAcceptedArbiter(0xB69945E2cB5f740bAa678b9A9c5609018314d950); //Valery
-        addAcceptedArbiter(0x82ba96680D2b790455A7Eee8B440F3205B1cDf1a); //Valery
-        addAcceptedArbiter(0x5de277bD814d95C47382CCc00718cAD3FD885c26); //Valery
-        addAcceptedArbiter(0x4C67EB86d70354731f11981aeE91d969e3823c39); //Alex
-        addAcceptedArbiter(0x2ba366D91789e54F6b5019f752E5497374bd0dE8); //Alex
+        //addAcceptedArbiter(0xB69945E2cB5f740bAa678b9A9c5609018314d950); //Valery
+        //addAcceptedArbiter(0x82ba96680D2b790455A7Eee8B440F3205B1cDf1a); //Valery
+        //addAcceptedArbiter(0x5de277bD814d95C47382CCc00718cAD3FD885c26); //Valery
+        //addAcceptedArbiter(0x4C67EB86d70354731f11981aeE91d969e3823c39); //Alex
+        //addAcceptedArbiter(0x2ba366D91789e54F6b5019f752E5497374bd0dE8); //Alex
 
 		uint milestoneEtherAmount; //How much Ether does investor send for a milestone
 		uint milestoneTokenAmount; //How many Tokens does investor receive for a milestone
@@ -134,9 +134,8 @@ contract InvestContract is TokenPullable, Pullable {
         icoContract.investContractDeposited();
     } 
 
-
     //Adding an arbiter which has already accepted his participation in ICO.
-    function addAcceptedArbiter(address _arbiter) internal {
+    function addAcceptedArbiter(address _arbiter) public only(investor) {
         //require(token.balanceOf(address(this))==0); //only callable when there are no tokens at this contract
         arbiterAcceptCount +=1;
         var index = arbiterList.push(_arbiter);

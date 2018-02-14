@@ -22,8 +22,8 @@ contract ICOContract {
     uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
 
-    uint tokenLeft;
-    uint etherLeft;
+    //uint tokenLeft;
+    //uint etherLeft;
 
     Token public token;
     
@@ -125,8 +125,8 @@ contract ICOContract {
         assert(milestones.length > 1); //Has to have at least 2 milestones
         //assert(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
-        etherLeft = totalEther;
-        tokenLeft = totalToken;
+        //etherLeft = totalEther;
+        //tokenLeft = totalToken;
     }
 
     function finishMilestone(string _results) only(operator) public {
@@ -188,8 +188,8 @@ contract ICOContract {
         uint investmentToken = investContract.tokenAmount();
         uint investmentEther = investContract.etherAmount();
 
-        etherLeft -= investmentEther;
-        tokenLeft -= investmentToken;
+        //etherLeft -= investmentEther;
+        //tokenLeft -= investmentToken;
         assert(token.transfer(msg.sender, investmentToken)); 
     }
 
