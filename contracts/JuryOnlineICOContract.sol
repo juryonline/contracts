@@ -5,9 +5,7 @@ import "./JuryOnlineInvestContract.sol";
 contract ICOContract {
     
     address public projectWallet; //beneficiary wallet
-    address operator;
-
-    //address operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
+    address public operator;
 
     uint constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
@@ -20,9 +18,6 @@ contract ICOContract {
     
     uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
-
-    //uint tokenLeft;
-    //uint etherLeft;
 
     Token public token;
     
@@ -44,8 +39,6 @@ contract ICOContract {
     Milestone[] public milestones;
     uint public currentMilestone;
     uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
-    //uint sealTimestamp; //Until when it's possible to add new and change existing milestones
-
     
     modifier only(address _sender) {
         assert(msg.sender == _sender);
@@ -120,7 +113,7 @@ contract ICOContract {
 
     //TODO: add check if ICOContract has tokens
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
-    function seal() only(operator) notSealed() public { 
+    function seal() notSealed only(operator) public { 
         assert(milestones.length > 1); //Has to have at least 2 milestones
         //assert(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
@@ -143,16 +136,6 @@ contract ICOContract {
                 investContract.milestoneStarted(currentMilestone);
         }
         currentMilestone +=1;
-    }
-
-    ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
-    function getCurrentMilestone() public constant returns(uint) {
-        return currentMilestone;
-    }
-   
-    /// @dev Getter function for length. For testing purposes.
-    function milestonesLength() public view returns(uint) {
-        return milestones.length;
     }
 
     ///InvestContract part
@@ -200,6 +183,17 @@ contract ICOContract {
         uint balance = token.balanceOf(address(this));
         token.transfer(projectWallet, balance);
     }
+
+    ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
+    function getCurrentMilestone() public constant returns(uint) {
+        return currentMilestone;
+    }
+   
+    /// @dev Getter function for length. For testing purposes.
+    function milestonesLength() public view returns(uint) {
+        return milestones.length;
+    }
+
 
 }
 
