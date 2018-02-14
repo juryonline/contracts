@@ -10,9 +10,8 @@ contract TokenPullable {
 
   mapping(address => uint256) public tokenPayments;
 
-  function TokenPullable(address _ico) public {
-      ICOContract icoContract = ICOContract(_ico);
-      token = icoContract.token();
+  function TokenPullable(address _token) public {
+      token = Token(_token);
   }
 
   /**
@@ -40,14 +39,13 @@ contract InvestContract is TokenPullable, Pullable {
     address projectWallet; // person from ico team
     address investor; 
 
-    uint arbiterAcceptCount;
+    uint public arbiterAcceptCount;
     uint quorum;
 
     ICOContract public icoContract;
-    //Token public token;
 
-    uint[] etherPartition; //weis 
-    uint[] tokenPartition; //tokens
+    uint[] public etherPartition; //weis 
+    uint[] public tokenPartition; //tokens
 
     //Each arbiter has parameter delay which equals time interval in seconds betwwen dispute open and when the arbiter can vote
     struct ArbiterInfo { 
@@ -88,17 +86,17 @@ contract InvestContract is TokenPullable, Pullable {
         _;
     }
   
-    function InvestContract(address _ICOContractAddress, address _investor,  uint
-                           _etherAmount, uint _tokenAmount) TokenPullable(_ICOContractAddress)
+    function InvestContract(address _ICOContractAddress, address _token, address _investor,  uint
+                           _etherAmount, uint _tokenAmount) TokenPullable(_token)
     public {
         icoContract = ICOContract(_ICOContractAddress);
-        token = icoContract.token();
 		etherAmount = _etherAmount;
         tokenAmount = _tokenAmount;
         projectWallet = icoContract.projectWallet();
         investor = _investor;
         amountToPay = etherAmount*101/100; //101% of the agreed amount
         quorum = 2;
+
         //hardcoded arbiters
         //addAcceptedArbiter(0xB69945E2cB5f740bAa678b9A9c5609018314d950); //Valery
         //addAcceptedArbiter(0x82ba96680D2b790455A7Eee8B440F3205B1cDf1a); //Valery
@@ -148,7 +146,8 @@ contract InvestContract is TokenPullable, Pullable {
         uint milestone = getCurrentMilestone();
         assert(milestone > 0);
         assert(disputes[milestone-1].votes[msg.sender] == 0); 
-        //assert(now - disputes[milestone-1].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
+        //assert(now - disputes[milestone-1].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has
+        //passed since dispute had been opened, disabled for tests
         assert(now - disputes[milestone-1].timestamp >= 0); //test network poorly handles time 
         disputes[milestone-1].votes[msg.sender] = _voteAddress;
         disputes[milestone-1].voters[disputes[milestone-1].votesProject+disputes[milestone-1].votesInvestor] = msg.sender;
