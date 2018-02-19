@@ -10,7 +10,7 @@ contract InvestContract is TokenPullable, Pullable {
     uint public arbiterAcceptCount;
     uint quorum;
 
-    ICOContract public icoContract;
+    ICOContract icoContract;
 
     uint[] public etherPartition; //weis 
     uint[] public tokenPartition; //tokens
