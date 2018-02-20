@@ -44,7 +44,6 @@ contract ICOContract {
     uint public currentMilestone;
     uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
 
-    
     modifier only(address _sender) {
         assert(msg.sender == _sender);
         _;
@@ -76,8 +75,6 @@ contract ICOContract {
         minimumCap = _minimumCap;
         maximumCap = _maximumCap;
     }
-
-    //MILESTONES
   
     /// @dev Adds a milestone.
     /// @param _etherAmount amount of Ether needed for the added milestone
@@ -90,7 +87,7 @@ contract ICOContract {
     public returns(uint) {
         totalEther += _etherAmount;
         totalToken += _tokenAmount;
-        return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description));
+        return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description, ""));
     }
 
     /// @dev Edits milestone by given id and new parameters.
@@ -133,6 +130,7 @@ contract ICOContract {
 
     ///@dev Starts next milestone
     function startNextMilestone() public only(operator) {
+        // time call modifier is missing
         assert(currentMilestone != milestones.length); //checking if final milestone. There should be more than 1 milestone in the project
         assert(milestones[currentMilestone].finishTime == 0);//milestone has to be finished before the new one starts
         milestones[currentMilestone].startTime = now; //setting the of the next milestone
@@ -143,20 +141,12 @@ contract ICOContract {
         currentMilestone +=1;
     }
 
-    ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
-    function getCurrentMilestone() public view returns(uint) {
-        return currentMilestone;
-    }
-   
-    /// @dev Getter function for length. For testing purposes.
-    function milestonesLength() public view returns(uint) {
-        return milestones.length;
-    }
 
     //InvestContract part
     /// @dev Adds InvestContract at given addres to the pending (waiting for payment) InvestContracts
     /// @param _investContractAddress address of InvestContract
     function addInvestContract(address _investContractAddress) public sealed only(operator) returns(address) {
+        require(currentMilestone == 0);
         InvestContract investContract = InvestContract(_investContractAddress);
         require(investContract.icoContract() == address(this));
         require(investContract.etherAmount() >= minimalInvestment);
@@ -203,6 +193,16 @@ contract ICOContract {
     function returnTokens() public only(operator) {
         uint balance = token.balanceOf(address(this));
         token.transfer(projectWallet, balance);
+    }
+
+    ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
+    function getCurrentMilestone() public view returns(uint) {
+        return currentMilestone;
+    }
+   
+    /// @dev Getter function for length. For testing purposes.
+    function milestonesLength() public view returns(uint) {
+        return milestones.length;
     }
 
 }

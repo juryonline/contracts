@@ -52,14 +52,30 @@ contract('ICOContract', function(accounts) {
     testname = "testname";
     testsymbol = "testsymbol";
 
+    const mineOneBlock = async () => {
+        await web3.currentProvider.send({
+            jsonrpc: "2.0",
+            method: "evm_mine",
+            params: [],
+            id: 0
+        });
+    };
+
+    const mineNBlocks = async n => {
+        for (let i = 0; i < n; i++) {
+            await mineOneBlock();
+        }
+    };
+
+
     async function prepare() { //one day I will use this function
         icoContract = await ICOContract.new(token.address, projectWallet, sealTimestamp, minimumCap, maximumCap, accounts[0], {from: accounts[0]});
         token = await Token.new(testname, testsymbol, testdecimals, {from: accounts[0]});
         await token.mint(icoContract.address, tokenAmount*100, {from: accounts[0]});
         await token.start({from: accounts[0]});
-        await icoContract.addMilestone(etherAmount, tokenAmount, startTime, duration, description, "", {from: accounts[0]});
-        await icoContract.addMilestone(etherAmount*2, tokenAmount*2, startTime, duration, description, "doubled", {from: accounts[0]});
-        await icoContract.addMilestone(etherAmount*5, tokenAmount*5, startTime, duration, description, "x5", {from: accounts[0]});
+        await icoContract.addMilestone(etherAmount, tokenAmount, startTime, duration, description, {from: accounts[0]});
+        await icoContract.addMilestone(etherAmount*2, tokenAmount*2, startTime, duration, description,  {from: accounts[0]});
+        await icoContract.addMilestone(etherAmount*5, tokenAmount*5, startTime, duration, description,  {from: accounts[0]});
         await icoContract.seal({from: accounts[0]});
     };
 
@@ -76,9 +92,9 @@ contract('ICOContract', function(accounts) {
         assert.equal(balance.valueOf(), tokenAmount*100, "Tokens have not been minted to the ICOContract");
     });
     it('Adding milestones', async function() {
-        await icoContract.addMilestone(etherAmount, tokenAmount, startTime, duration, description, "", {from: accounts[0]});
-        await icoContract.addMilestone(etherAmount*5, tokenAmount*2, startTime, duration, description, "second milestone", {from: accounts[0]});
-        await icoContract.addMilestone(etherAmount*2, tokenAmount*5, startTime, duration, description, "first milestone", {from: accounts[0]});
+        await icoContract.addMilestone(etherAmount, tokenAmount, startTime, duration, description, {from: accounts[0]});
+        await icoContract.addMilestone(etherAmount*5, tokenAmount*2, startTime, duration, description, {from: accounts[0]});
+        await icoContract.addMilestone(etherAmount*2, tokenAmount*5, startTime, duration, description, {from: accounts[0]});
         len = await icoContract.milestonesLength.call();
         assert.equal(len.valueOf(), 3, "Milestones have not been added");
     });
@@ -90,12 +106,10 @@ contract('ICOContract', function(accounts) {
 
         tstampAfterSeal = await icoContract.sealTimestamp();
         assert.notEqual(tstampAfterSeal.valueOf(), sealTimestamp, 'Seal timestamp has not been updated');
+        await mineNBlocks(20);
     });
     it('Create an InvestContract.', async function(){
         investContract = await InvestContract.new(icoContract.address, investor, etherAmount, tokenAmount);
-        //investContractAddress = await icoContract.createInvestContract.call(investor, etherAmount, tokenAmount);
-        //jawait icoContract.createInvestContract(investor, etherAmount, tokenAmount, {from: accounts[0]});
-        //investContract = InvestContract.at(investContractAddress);
         await icoContract.addInvestContract(investContract.address, {from: accounts[0]})
         investContractAddress = investContract.address;
     });
@@ -133,9 +147,9 @@ contract('ICOContract', function(accounts) {
         assert.equal(part2.valueOf(), p2, 'InvestContract has incorrect third milestone Ether partition');
     });
     it('Create second InvestContract.', async function(){
-        investContractAddress2 = await icoContract.createInvestContract.call(investor, etherAmount, tokenAmount);
-        await icoContract.createInvestContract(investor, etherAmount*10, tokenAmount, {from: accounts[0]});
-        investContract2 = InvestContract.at(investContractAddress2);
+        investContract2 = await InvestContract.new(icoContract.address, investor, etherAmount, tokenAmount);
+        await icoContract.addInvestContract(investContract2.address, {from: accounts[0]})
+        investContractAddress2 = investContract2.address;
     });
     it('Send money to InvestContract2', async function() {
         amountToPay = await investContract2.amountToPay();
@@ -146,7 +160,6 @@ contract('ICOContract', function(accounts) {
         }
         assert.notEqual(web3.eth.getBalance(investContractAddress2), Math.floor(etherAmount*10*1.01), '2nd invest contract has not received correct amount of Ether');
     });
-
     it('Starting milestone', async function() {
         await icoContract.startNextMilestone({from: accounts[0]});
         await icoContract.finishMilestone("qwe", {from: accounts[0]});
@@ -182,11 +195,8 @@ contract('ICOContract', function(accounts) {
     });
     it('Voting', async function() {
         toWithdraw = await investContract.payments(investor);
-        //console.log(toWithdraw.toNumber())
-
         //assert.equal(toWithdraw.toNumber(), part0.toNumber()+part1.toNumber());
         index = await icoContract.investContractsIndices.call(investContract.address);
-        console.log(index.valueOf())
 
         await investContract.vote(investor, {from: accounts[5]});
         await investContract.vote(investor, {from: accounts[6]});
@@ -194,13 +204,9 @@ contract('ICOContract', function(accounts) {
 
         disputing = await investContract.disputing();
         //assert.equal(disputing, false, 'Dispute has not been resolved');
-
         index = await icoContract.investContractsIndices.call(investContract.address);
-        console.log(index.valueOf())
 
         toWithdraw = await investContract.payments(investor);
-        //console.log(toWithdraw.toNumber())
-        //toWithdraw = await investContract.payments(projectWallet);
         //assert.equal(toWithdraw.toNumber(), part0.toNumber()+part1.toNumber());
     });
 
