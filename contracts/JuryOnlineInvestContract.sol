@@ -174,7 +174,7 @@ contract InvestContract is TokenPullable, Pullable {
 
     function openDispute(string _reason) public only(investor) {
         assert(!disputing);
-        var milestone = getCurrentMilestone();
+        uint milestone = getCurrentMilestone();
         assert(milestone > 0);
         disputing = true;
         disputes[milestone-1].timestamp = now;

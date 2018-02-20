@@ -20,14 +20,14 @@ contract ICOContract {
     uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
 
-    uint tokenLeft;
-    uint etherLeft;
+    uint public tokenLeft;
+    uint public etherLeft;
 
     Token public token;
     
     ///ICO caps
-    uint minimumCap; // set in constructor
-    uint maximumCap;  // set in constructor
+    uint public minimumCap; // set in constructor
+    uint public maximumCap;  // set in constructor
 
     //Structure for milestone
     struct Milestone {
@@ -59,6 +59,15 @@ contract ICOContract {
         _;
     }
 
+    modifier started() {
+        assert(currentMilestone > 0);
+        _;
+    }
+
+    modifier notStarted() {
+        assert(currentMilestone == 0);
+        _;
+    }
     /// @dev Create an ICOContract.
     /// @param _tokenAddress Address of project token contract
     /// @param _projectWallet Address of project developers wallet
@@ -122,7 +131,7 @@ contract ICOContract {
 
     ///@dev Finishes milestone
     ///@param _results milestone results
-    function finishMilestone(string _results) only(operator) public {
+    function finishMilestone(string _results) started only(operator) public {
         //assert(milestones[currentMilestone-1].finishTime == 0);//can be called only once
         milestones[currentMilestone-1].finishTime = now;
         milestones[currentMilestone-1].results = _results;
@@ -145,8 +154,7 @@ contract ICOContract {
     //InvestContract part
     /// @dev Adds InvestContract at given addres to the pending (waiting for payment) InvestContracts
     /// @param _investContractAddress address of InvestContract
-    function addInvestContract(address _investContractAddress) public sealed only(operator) returns(address) {
-        require(currentMilestone == 0);
+    function addInvestContract(address _investContractAddress) public sealed only(operator) notStarted returns(address) {
         InvestContract investContract = InvestContract(_investContractAddress);
         require(investContract.icoContract() == address(this));
         require(investContract.etherAmount() >= minimalInvestment);
@@ -158,7 +166,7 @@ contract ICOContract {
     }
 
     /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
-    function investContractDeposited() public {
+    function investContractDeposited() notStarted public {
         //require(maximumCap >= investEthAmount + investorEther);
         uint index = pendingInvestContractsIndices[msg.sender];
         assert(index > 0);
@@ -179,7 +187,7 @@ contract ICOContract {
     }
 
     /// @dev If investor has won the dispute, then InvestContract is deleted by calling this function
-    function deleteInvestContract() public {
+    function deleteInvestContract() started public {
         uint index = investContractsIndices[msg.sender];
         assert(index > 0);
         uint len = investContracts.length;
@@ -206,5 +214,3 @@ contract ICOContract {
     }
 
 }
-
-
