@@ -44,7 +44,7 @@ contract ICOContract {
     uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
 
     modifier only(address _sender) {
-        assert(msg.sender == _sender);
+        require(msg.sender == _sender);
         _;
     }
 
@@ -118,8 +118,8 @@ contract ICOContract {
     //TODO: add check if ICOContract has tokens
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
     function seal() public notSealed only(operator) { 
-        assert(milestones.length > 1); //Has to have at least 2 milestones
-        //assert(token.balanceOf(address(this)) >= totalToken;
+        require(milestones.length > 1); //Has to have at least 2 milestones
+        //require(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
         etherLeft = totalEther;
         tokenLeft = totalToken;
@@ -128,7 +128,7 @@ contract ICOContract {
     ///@dev Finishes milestone
     ///@param _results milestone results
     function finishMilestone(string _results) public started only(operator) {
-        //assert(milestones[currentMilestone-1].finishTime == 0);//can be called only once
+        //require(milestones[currentMilestone-1].finishTime == 0);//can be called only once
         milestones[currentMilestone-1].finishTime = now;
         milestones[currentMilestone-1].results = _results;
     }
@@ -136,8 +136,8 @@ contract ICOContract {
     ///@dev Starts next milestone
     function startNextMilestone() public only(operator) {
         // time call modifier is missing
-        assert(currentMilestone != milestones.length); //checking if final milestone. There should be more than 1 milestone in the project
-        assert(milestones[currentMilestone].finishTime == 0);//milestone has to be finished before the new one starts
+        require(currentMilestone != milestones.length); //checking if final milestone. There should be more than 1 milestone in the project
+        require(milestones[currentMilestone].finishTime == 0);//milestone has to be finished before the new one starts
         milestones[currentMilestone].startTime = now; //setting the of the next milestone
         for(uint i=1; i < investContracts.length; i++) {
                 InvestContract investContract =  InvestContract(investContracts[i]); 
@@ -162,7 +162,7 @@ contract ICOContract {
     /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
     function investContractDeposited() public notStarted {
         //require(maximumCap >= investEthAmount + investorEther);
-        assert(pendingInvestContracts[msg.sender]);
+        require(pendingInvestContracts[msg.sender]);
         InvestContract investContract = InvestContract(msg.sender);
         delete pendingInvestContracts[msg.sender];
         investContracts.push(msg.sender);
@@ -179,7 +179,7 @@ contract ICOContract {
     /// @dev If investor has won the dispute, then InvestContract is deleted by calling this function
     function deleteInvestContract() public started {
         uint index = investContractsIndices[msg.sender];
-        assert(index > 0);
+        require(index > 0);
         uint len = investContracts.length;
         investContracts[index] = investContracts[len-1];
         investContracts.length = len-1;
