@@ -49,24 +49,25 @@ contract ICOContract {
     }
 
     modifier notSealed() {
-        assert(now <= sealTimestamp);
+        require(now <= sealTimestamp);
         _;
     }
 
     modifier sealed() {
-        assert(now > sealTimestamp);
+        require(now > sealTimestamp);
         _;
     }
 
     modifier started() {
-        assert(currentMilestone > 0);
+        require(currentMilestone > 0);
         _;
     }
 
     modifier notStarted() {
-        assert(currentMilestone == 0);
+        require(currentMilestone == 0);
         _;
     }
+
     /// @dev Create an ICOContract.
     /// @param _tokenAddress Address of project token contract
     /// @param _projectWallet Address of project developers wallet
@@ -90,9 +91,7 @@ contract ICOContract {
     /// @param _startTime field for start timestamp of added milestone
     /// @param _duration assumed duration of the milestone
     /// @param _description description of added milestone
-    function addMilestone(uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description)        
-    notSealed only(operator)
-    public returns(uint) {
+    function addMilestone(uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description) public notSealed only(operator) returns(uint) {
         totalEther += _etherAmount;
         totalToken += _tokenAmount;
         return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description, ""));
@@ -105,9 +104,7 @@ contract ICOContract {
     /// @param _startTime start timestamp of the milestone
     /// @param _duration assumed duration of the milestone
     /// @param _description description of the milestone
-    function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description) 
-    notSealed only(operator)
-    public {
+    function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description) public notSealed only(operator) {
         assert(_id < milestones.length);
         totalEther = totalEther - milestones[_id].etherAmount + _etherAmount;
         totalToken = totalToken - milestones[_id].tokenAmount + _tokenAmount;
@@ -120,17 +117,17 @@ contract ICOContract {
 
     //TODO: add check if ICOContract has tokens
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
-    function seal() notSealed only(operator) public { 
+    function seal() public notSealed only(operator) { 
         assert(milestones.length > 1); //Has to have at least 2 milestones
         //assert(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
-        //etherLeft = totalEther;
-        //tokenLeft = totalToken;
+        etherLeft = totalEther;
+        tokenLeft = totalToken;
     }
 
     ///@dev Finishes milestone
     ///@param _results milestone results
-    function finishMilestone(string _results) started only(operator) public {
+    function finishMilestone(string _results) public started only(operator) {
         //assert(milestones[currentMilestone-1].finishTime == 0);//can be called only once
         milestones[currentMilestone-1].finishTime = now;
         milestones[currentMilestone-1].results = _results;
@@ -163,7 +160,7 @@ contract ICOContract {
     }
 
     /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
-    function investContractDeposited() notStarted public {
+    function investContractDeposited() public notStarted {
         //require(maximumCap >= investEthAmount + investorEther);
         assert(pendingInvestContracts[msg.sender]);
         InvestContract investContract = InvestContract(msg.sender);
@@ -180,7 +177,7 @@ contract ICOContract {
     }
 
     /// @dev If investor has won the dispute, then InvestContract is deleted by calling this function
-    function deleteInvestContract() started public {
+    function deleteInvestContract() public started {
         uint index = investContractsIndices[msg.sender];
         assert(index > 0);
         uint len = investContracts.length;

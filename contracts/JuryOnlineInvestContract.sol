@@ -10,7 +10,7 @@ contract InvestContract is TokenPullable, Pullable {
     uint public arbiterAcceptCount;
     uint public quorum;
 
-    ICOContract icoContract;
+    ICOContract public icoContract;
 
     uint[] public etherPartition; //weis 
     uint[] public tokenPartition; //tokens
@@ -52,10 +52,22 @@ contract InvestContract is TokenPullable, Pullable {
         require(arbiters[msg.sender].voteDelay > 0);
         _;
     }
-  
+
+    modifier started() {
+        require(getCurrentMilestone() > 0);
+        _;
+    }
+
+    modifier notStarted() {
+        require(getCurrentMilestone() == 0);
+        _;
+    }
+
+
     ///@dev Creates an InvestContract
-    function InvestContract(address _ICOContractAddress, address _token, address _investor,  uint
-                           _etherAmount, uint _tokenAmount) TokenPullable(_token) public {
+    function InvestContract(address _ICOContractAddress, address _investor,  uint _etherAmount, uint _tokenAmount)
+    TokenPullable(ICOContract(_ICOContractAddress).token()) //wierd initialization: TokenPullable needs token address and must be set before InvestContract constructor takes place 
+    public {
         icoContract = ICOContract(_ICOContractAddress);
 		etherAmount = _etherAmount;
         tokenAmount = _tokenAmount;
@@ -89,29 +101,26 @@ contract InvestContract is TokenPullable, Pullable {
 		tokenPartition[0] += _tokenAmount - totalTokenInvestment; //rounding error is added to the first milestone
     }
 
-    function() payable public only(investor) { 
-        assert(arbiterAcceptCount >= quorum);
-        assert(msg.value == amountToPay);
-        assert(getCurrentMilestone() == 0); //before first
+    function() payable public notStarted only(investor) { 
+        require(arbiterAcceptCount >= quorum);
+        require(msg.value == amountToPay);
         icoContract.investContractDeposited();
     } 
 
     //Adding an arbiter which has already accepted his participation in ICO.
-    function addAcceptedArbiter(address _arbiter) internal {
-        require(getCurrentMilestone() == 0);
-        //require(token.balanceOf(address(this))==0); //only callable when there are no tokens at this contract
+    function addAcceptedArbiter(address _arbiter) internal notStarted {
         arbiterAcceptCount +=1;
         var index = arbiterList.push(_arbiter);
         arbiters[_arbiter] = ArbiterInfo(index, true, 1);
     }
 
     function vote(address _voteAddress) public onlyArbiter {   
-        assert(disputing);
-        assert(_voteAddress == investor || _voteAddress == projectWallet);
+        require(disputing);
+        require(_voteAddress == investor || _voteAddress == projectWallet);
         uint milestone = getCurrentMilestone();
-        assert(milestone > 0);
-        assert(disputes[milestone-1].votes[msg.sender] == 0); 
-        assert(now - disputes[milestone-1].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
+        require(milestone > 0);
+        require(disputes[milestone-1].votes[msg.sender] == 0); 
+        require(now - disputes[milestone-1].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
         disputes[milestone-1].votes[msg.sender] = _voteAddress;
         disputes[milestone-1].voters[disputes[milestone-1].votesProject+disputes[milestone-1].votesInvestor] = msg.sender;
         if (_voteAddress == projectWallet) {
@@ -145,9 +154,9 @@ contract InvestContract is TokenPullable, Pullable {
     }
 
     function openDispute(string _reason) public only(investor) {
-        assert(!disputing);
+        require(!disputing);
         uint milestone = getCurrentMilestone();
-        assert(milestone > 0);
+        require(milestone > 0);
         disputing = true;
         disputes[milestone-1].timestamp = now;
         disputes[milestone-1].reason = _reason;
@@ -155,7 +164,7 @@ contract InvestContract is TokenPullable, Pullable {
 
     ///@dev When new milestone is started this functions is called
 	function milestoneStarted(uint _milestone) public only(address(icoContract)) {
-        assert(!disputing);
+        require(!disputing);
 		var etherToSend = etherPartition[_milestone];
 		var tokensToSend = tokenPartition[_milestone];
 

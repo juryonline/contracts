@@ -14,6 +14,11 @@ const mineOneBlock = async () => {
     });
 };
 
+const mineNBlocks = async n => {
+    for (let i = 0; i < n; i++) {
+        await mineOneBlock();
+    }
+};
 
 
 contract('Token', function(accounts) {
@@ -63,20 +68,6 @@ contract('ICOContract', function(accounts) {
     testname = "testname";
     testsymbol = "testsymbol";
 
-    const mineOneBlock = async () => {
-        await web3.currentProvider.send({
-            jsonrpc: "2.0",
-            method: "evm_mine",
-            params: [],
-            id: 0
-        });
-    };
-
-    const mineNBlocks = async n => {
-        for (let i = 0; i < n; i++) {
-            await mineOneBlock();
-        }
-    };
 
     const addInvestContract = async () => {
         investContract = await InvestContract.new(icoContract.address, investor, etherAmount, tokenAmount);
@@ -98,7 +89,6 @@ contract('ICOContract', function(accounts) {
 
     it('Deploy of Token contract', async function() {
         token = await Token.new(testname, testsymbol, testdecimals, {from: accounts[0]});
-        console.log(token.address);
     });
     it('Deploy of ICOContract', async function() {
         icoContract = await ICOContract.new(token.address, projectWallet, sealTimestamp, minimumCap, maximumCap, accounts[0], {from: accounts[0]});
@@ -124,11 +114,7 @@ contract('ICOContract', function(accounts) {
 
         tstampAfterSeal = await icoContract.sealTimestamp();
         assert.notEqual(tstampAfterSeal.valueOf(), sealTimestamp, 'Seal timestamp has not been updated');
-<<<<<<< HEAD
         await mineNBlocks(20);
-=======
-        await mineOneBlock();
->>>>>>> panel
     });
     it('Create an InvestContract.', async function(){
         investContract = await InvestContract.new(icoContract.address, investor, etherAmount, tokenAmount);
@@ -136,11 +122,13 @@ contract('ICOContract', function(accounts) {
         investContractAddress = investContract.address;
     });
     it('Adding arbiters', async function() {
+        /*
         await investContract.addAcceptedArbiter(accounts[5], {from: investor});
         await investContract.addAcceptedArbiter(accounts[6], {from: investor});
         await investContract.addAcceptedArbiter(accounts[7], {from: investor});
         await investContract.addAcceptedArbiter(accounts[8], {from: investor});
         await investContract.addAcceptedArbiter(accounts[9], {from: investor});
+        */
         arbiterAcceptCount = await investContract.arbiterAcceptCount();
         assert.equal(arbiterAcceptCount, 5, 'Arbiters have not been added');
     });
