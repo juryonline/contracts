@@ -9,8 +9,7 @@ contract ICOContract {
 
     uint constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
-    address[] public pendingInvestContracts = [0x0]; //pending InvestContracts not yet accepted by the project
-    mapping(address => uint) public pendingInvestContractsIndices;
+    mapping(address => bool) public pendingInvestContracts;
 
     address[] public investContracts = [0x0]; // accepted InvestContracts
     mapping(address => uint) public investContractsIndices;
@@ -121,12 +120,12 @@ contract ICOContract {
 
     //TODO: add check if ICOContract has tokens
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
-    function seal() only(operator) notSealed() public { 
+    function seal() notSealed only(operator) public { 
         assert(milestones.length > 1); //Has to have at least 2 milestones
         //assert(token.balanceOf(address(this)) >= totalToken;
         sealTimestamp = now;
-        etherLeft = totalEther;
-        tokenLeft = totalToken;
+        //etherLeft = totalEther;
+        //tokenLeft = totalToken;
     }
 
     ///@dev Finishes milestone
@@ -150,31 +149,25 @@ contract ICOContract {
         currentMilestone +=1;
     }
 
-
     //InvestContract part
     /// @dev Adds InvestContract at given addres to the pending (waiting for payment) InvestContracts
     /// @param _investContractAddress address of InvestContract
-    function addInvestContract(address _investContractAddress) public sealed only(operator) notStarted returns(address) {
+    function addInvestContract(address _investContractAddress) public sealed only(operator) notStarted {
         InvestContract investContract = InvestContract(_investContractAddress);
         require(investContract.icoContract() == address(this));
         require(investContract.etherAmount() >= minimalInvestment);
         //require(milestones[0].startTime - now >= 5 days);
         //require(maximumCap >= _etherAmount + investorEther);
         //require(token.balanceOf(address(this)) >= _tokenAmount + investorTokens);
-        pendingInvestContracts.push(_investContractAddress);
-        pendingInvestContractsIndices[_investContractAddress]=(pendingInvestContracts.length-1); //note that indices start from 1
+        pendingInvestContracts[_investContractAddress] = true; //note that indices start from 1
     }
 
     /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
     function investContractDeposited() notStarted public {
         //require(maximumCap >= investEthAmount + investorEther);
-        uint index = pendingInvestContractsIndices[msg.sender];
-        assert(index > 0);
-        uint len = pendingInvestContracts.length;
-        InvestContract investContract = InvestContract(pendingInvestContracts[index]);
-        pendingInvestContracts[index] = pendingInvestContracts[len-1];
-        pendingInvestContracts.length = len-1;
-        delete pendingInvestContractsIndices[msg.sender];
+        assert(pendingInvestContracts[msg.sender]);
+        InvestContract investContract = InvestContract(msg.sender);
+        delete pendingInvestContracts[msg.sender];
         investContracts.push(msg.sender);
         investContractsIndices[msg.sender]=investContracts.length-1; //note that indexing starts from 1
 
@@ -191,7 +184,6 @@ contract ICOContract {
         uint index = investContractsIndices[msg.sender];
         assert(index > 0);
         uint len = investContracts.length;
-        //InvestContract investContract = InvestContract(investContracts[index]);
         investContracts[index] = investContracts[len-1];
         investContracts.length = len-1;
         delete investContractsIndices[msg.sender];

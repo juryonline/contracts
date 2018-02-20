@@ -5,6 +5,17 @@ var Token = artifacts.require('Token')
 var ICOContract = artifacts.require('ICOContract')
 var InvestContract = artifacts.require('InvestContract')
 
+const mineOneBlock = async () => {
+    await web3.currentProvider.send({
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        params: [],
+        id: 0
+    });
+};
+
+
+
 contract('Token', function(accounts) {
     testdecimals = 9;
     testname = "testname";
@@ -113,7 +124,11 @@ contract('ICOContract', function(accounts) {
 
         tstampAfterSeal = await icoContract.sealTimestamp();
         assert.notEqual(tstampAfterSeal.valueOf(), sealTimestamp, 'Seal timestamp has not been updated');
+<<<<<<< HEAD
         await mineNBlocks(20);
+=======
+        await mineOneBlock();
+>>>>>>> panel
     });
     it('Create an InvestContract.', async function(){
         investContract = await InvestContract.new(icoContract.address, investor, etherAmount, tokenAmount);
@@ -165,7 +180,7 @@ contract('ICOContract', function(accounts) {
         } catch(e) {
             true
         }
-        assert.notEqual(web3.eth.getBalance(investContractAddress2), Math.floor(etherAmount*10*1.01), '2nd invest contract has not received correct amount of Ether');
+        assert.notEqual(web3.eth.getBalance(investContractAddress2).toNumber(), Math.floor(etherAmount*10*1.01), '2nd invest contract has not received correct amount of Ether');
     });
     it('Create second InvestContract.', async function(){
         for (var i=0; i<0; i++) {
