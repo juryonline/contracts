@@ -5,9 +5,7 @@ import "./JuryOnlineInvestContract.sol";
 contract ICOContract {
     
     address public projectWallet; //beneficiary wallet
-    address operator;
-
-    //address operator = 0x4C67EB86d70354731f11981aeE91d969e3823c39; //address of the ICO operator — the one who adds milestones and InvestContracts
+    address public operator; //address of the ICO operator — the one who adds milestones and InvestContracts
 
     uint constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
 
@@ -45,7 +43,6 @@ contract ICOContract {
     Milestone[] public milestones;
     uint public currentMilestone;
     uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
-    //uint sealTimestamp; //Until when it's possible to add new and change existing milestones
 
     
     modifier only(address _sender) {
@@ -88,13 +85,12 @@ contract ICOContract {
     /// @param _startTime field for start timestamp of added milestone
     /// @param _duration assumed duration of the milestone
     /// @param _description description of added milestone
-    /// @param _result result description of added milestone
-    function addMilestone(uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description, string _result)        
+    function addMilestone(uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description)        
     notSealed only(operator)
     public returns(uint) {
         totalEther += _etherAmount;
         totalToken += _tokenAmount;
-        return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description, _result));
+        return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description));
     }
 
     /// @dev Edits milestone by given id and new parameters.
@@ -104,8 +100,7 @@ contract ICOContract {
     /// @param _startTime start timestamp of the milestone
     /// @param _duration assumed duration of the milestone
     /// @param _description description of the milestone
-    /// @param _results result description of the milestone
-    function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description, string _results) 
+    function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description) 
     notSealed only(operator)
     public {
         assert(_id < milestones.length);
@@ -116,7 +111,6 @@ contract ICOContract {
         milestones[_id].startTime = _startTime;
         milestones[_id].duration = _duration;
         milestones[_id].description = _description;
-        milestones[_id].results = _results;
     }
 
     //TODO: add check if ICOContract has tokens
@@ -129,12 +123,15 @@ contract ICOContract {
         tokenLeft = totalToken;
     }
 
+    ///@dev Finishes milestone
+    ///@param _results milestone results
     function finishMilestone(string _results) only(operator) public {
         //assert(milestones[currentMilestone-1].finishTime == 0);//can be called only once
         milestones[currentMilestone-1].finishTime = now;
         milestones[currentMilestone-1].results = _results;
     }
 
+    ///@dev Starts next milestone
     function startNextMilestone() public only(operator) {
         assert(currentMilestone != milestones.length); //checking if final milestone. There should be more than 1 milestone in the project
         assert(milestones[currentMilestone].finishTime == 0);//milestone has to be finished before the new one starts
@@ -147,7 +144,7 @@ contract ICOContract {
     }
 
     ///@dev Returns number of the current milestone. Starts from 1. 0 indicates that project implementation has not started yet.
-    function getCurrentMilestone() public constant returns(uint) {
+    function getCurrentMilestone() public view returns(uint) {
         return currentMilestone;
     }
    
@@ -156,20 +153,18 @@ contract ICOContract {
         return milestones.length;
     }
 
-    ///InvestContract part
-    function createInvestContract(address _investor, uint _etherAmount, uint _tokenAmount) public 
-        //sealed
-        only(operator)
-        returns(address)
-    {
-        require(_etherAmount >= minimalInvestment);
+    //InvestContract part
+    /// @dev Adds InvestContract at given addres to the pending (waiting for payment) InvestContracts
+    /// @param _investContractAddress address of InvestContract
+    function addInvestContract(address _investContractAddress) public sealed only(operator) returns(address) {
+        InvestContract investContract = InvestContract(_investContractAddress);
+        require(investContract.icoContract() == address(this));
+        require(investContract.etherAmount() >= minimalInvestment);
         //require(milestones[0].startTime - now >= 5 days);
         //require(maximumCap >= _etherAmount + investorEther);
         //require(token.balanceOf(address(this)) >= _tokenAmount + investorTokens);
-        address investContract = new InvestContract(address(this), _investor, _etherAmount, _tokenAmount);
-        pendingInvestContracts.push(investContract);
-        pendingInvestContractsIndices[investContract]=(pendingInvestContracts.length-1); //note that indices start from 1
-        return(investContract);
+        pendingInvestContracts.push(_investContractAddress);
+        pendingInvestContractsIndices[_investContractAddress]=(pendingInvestContracts.length-1); //note that indices start from 1
     }
 
     /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
@@ -193,6 +188,7 @@ contract ICOContract {
         assert(token.transfer(msg.sender, investmentToken)); 
     }
 
+    /// @dev If investor has won the dispute, then InvestContract is deleted by calling this function
     function deleteInvestContract() public {
         uint index = investContractsIndices[msg.sender];
         assert(index > 0);
@@ -203,6 +199,7 @@ contract ICOContract {
         delete investContractsIndices[msg.sender];
     }
 
+    /// @dev Sends all unused token to projectWallet
     function returnTokens() public only(operator) {
         uint balance = token.balanceOf(address(this));
         token.transfer(projectWallet, balance);

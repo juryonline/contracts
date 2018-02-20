@@ -1,7 +1,8 @@
 *.swp
 models/__pycache__
 __pycache__
-restapi/node_modules
+node_modules/
+package*
 build/
 abi/
 *.abi

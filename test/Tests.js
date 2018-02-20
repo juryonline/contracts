@@ -92,9 +92,12 @@ contract('ICOContract', function(accounts) {
         assert.notEqual(tstampAfterSeal.valueOf(), sealTimestamp, 'Seal timestamp has not been updated');
     });
     it('Create an InvestContract.', async function(){
-        investContractAddress = await icoContract.createInvestContract.call(investor, etherAmount, tokenAmount);
-        await icoContract.createInvestContract(investor, etherAmount, tokenAmount, {from: accounts[0]});
-        investContract = InvestContract.at(investContractAddress);
+        investContract = await InvestContract.new(icoContract.address, investor, etherAmount, tokenAmount);
+        //investContractAddress = await icoContract.createInvestContract.call(investor, etherAmount, tokenAmount);
+        //jawait icoContract.createInvestContract(investor, etherAmount, tokenAmount, {from: accounts[0]});
+        //investContract = InvestContract.at(investContractAddress);
+        await icoContract.addInvestContract(investContract.address, {from: accounts[0]})
+        investContractAddress = investContract.address;
     });
     it('Adding arbiters', async function() {
         await investContract.addAcceptedArbiter(accounts[5], {from: investor});
