@@ -40,7 +40,7 @@ contract ICOContract {
     }
 
     Milestone[] public milestones;
-    uint public currentMilestone;
+    uint public currentMilestone; //0 indicates that no milestone has started, so the real ones start from 1
     uint public sealTimestamp; //Until when it's possible to add new and change existing milestones
 
     modifier only(address _sender) {
@@ -125,6 +125,7 @@ contract ICOContract {
         tokenLeft = totalToken;
     }
 
+    ///in fact modifier started is useless, as it will throw if currentMilestone <1, however it remains here for readability
     ///@dev Finishes milestone
     ///@param _results milestone results
     function finishMilestone(string _results) public started only(operator) {
@@ -134,10 +135,11 @@ contract ICOContract {
     }
 
     ///@dev Starts next milestone
-    function startNextMilestone() public only(operator) {
-        // time call modifier is missing
+    function startNextMilestone() public sealed only(operator) {
         require(currentMilestone != milestones.length); //checking if final milestone. There should be more than 1 milestone in the project
-        require(milestones[currentMilestone].finishTime == 0);//milestone has to be finished before the new one starts
+        if (currentMilestone != 0) {
+            require(milestones[currentMilestone-1].finishTime != 0);//previous milestone has to be finished
+        }
         milestones[currentMilestone].startTime = now; //setting the of the next milestone
         for(uint i=1; i < investContracts.length; i++) {
                 InvestContract investContract =  InvestContract(investContracts[i]); 
@@ -149,25 +151,25 @@ contract ICOContract {
     //InvestContract part
     /// @dev Adds InvestContract at given addres to the pending (waiting for payment) InvestContracts
     /// @param _investContractAddress address of InvestContract
-    function addInvestContract(address _investContractAddress) public sealed only(operator) notStarted {
+    function addInvestContract(address _investContractAddress) public sealed notStarted only(operator) {
         InvestContract investContract = InvestContract(_investContractAddress);
         require(investContract.icoContract() == this);
         require(investContract.etherAmount() >= minimalInvestment);
         //require(milestones[0].startTime - now >= 5 days);
         //require(maximumCap >= _etherAmount + investorEther);
         //require(token.balanceOf(this) >= _tokenAmount + investorTokens);
-        pendingInvestContracts[_investContractAddress] = true; //note that indices start from 1
+        pendingInvestContracts[_investContractAddress] = true; 
     }
 
     /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
     function investContractDeposited() public notStarted {
         //require(maximumCap >= investEthAmount + investorEther);
         require(pendingInvestContracts[msg.sender]);
-        InvestContract investContract = InvestContract(msg.sender);
         delete pendingInvestContracts[msg.sender];
         investContracts.push(msg.sender);
-        investContractsIndices[msg.sender]=investContracts.length-1; //note that indexing starts from 1
+        investContractsIndices[msg.sender]=investContracts.length-1;
 
+        InvestContract investContract = InvestContract(msg.sender);
         uint investmentToken = investContract.tokenAmount();
         uint investmentEther = investContract.etherAmount();
 

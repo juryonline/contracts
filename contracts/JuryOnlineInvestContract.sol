@@ -113,7 +113,7 @@ contract InvestContract is TokenPullable, Pullable {
         arbiters[_arbiter] = ArbiterInfo(index, true, 1);
     }
 
-    function addArbiter(address _arbiter, uint _delay) public only(investor) notStarted {
+    function addArbiter(address _arbiter, uint _delay) public notStarted only(investor) {
         require(_delay > 0);
         var index = arbiterList.push(_arbiter);
         arbiters[_arbiter] = ArbiterInfo(index, false, _delay);
@@ -161,7 +161,7 @@ contract InvestContract is TokenPullable, Pullable {
         }
     }
 
-    function openDispute(string _reason) public only(investor) {
+    function openDispute(string _reason) public started only(investor) {
         require(!disputing);
         uint milestone = getCurrentMilestone();
         require(milestone > 0);
