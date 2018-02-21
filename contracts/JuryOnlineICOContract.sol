@@ -119,7 +119,7 @@ contract ICOContract {
     ///@dev Seals milestone making them no longer changeable. Works by setting changeable timestamp to the current one, //so in future it would be no longer callable.
     function seal() public notSealed only(operator) { 
         require(milestones.length > 1); //Has to have at least 2 milestones
-        //require(token.balanceOf(address(this)) >= totalToken;
+        //require(token.balanceOf(this) >= totalToken;
         sealTimestamp = now;
         etherLeft = totalEther;
         tokenLeft = totalToken;
@@ -151,11 +151,11 @@ contract ICOContract {
     /// @param _investContractAddress address of InvestContract
     function addInvestContract(address _investContractAddress) public sealed only(operator) notStarted {
         InvestContract investContract = InvestContract(_investContractAddress);
-        require(investContract.icoContract() == address(this));
+        require(investContract.icoContract() == this);
         require(investContract.etherAmount() >= minimalInvestment);
         //require(milestones[0].startTime - now >= 5 days);
         //require(maximumCap >= _etherAmount + investorEther);
-        //require(token.balanceOf(address(this)) >= _tokenAmount + investorTokens);
+        //require(token.balanceOf(this) >= _tokenAmount + investorTokens);
         pendingInvestContracts[_investContractAddress] = true; //note that indices start from 1
     }
 
@@ -186,9 +186,9 @@ contract ICOContract {
         delete investContractsIndices[msg.sender];
     }
 
-    /// @dev Sends all unused token to projectWallet
+    /// @dev Sends all unused tokens to projectWallet
     function returnTokens() public only(operator) {
-        uint balance = token.balanceOf(address(this));
+        uint balance = token.balanceOf(this);
         token.transfer(projectWallet, balance);
     }
 

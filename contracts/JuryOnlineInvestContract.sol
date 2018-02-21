@@ -63,7 +63,6 @@ contract InvestContract is TokenPullable, Pullable {
         _;
     }
 
-
     ///@dev Creates an InvestContract
     function InvestContract(address _ICOContractAddress, address _investor,  uint _etherAmount, uint _tokenAmount)
     TokenPullable(ICOContract(_ICOContractAddress).token()) //wierd initialization: TokenPullable needs token address and must be set before InvestContract constructor takes place 
@@ -114,41 +113,50 @@ contract InvestContract is TokenPullable, Pullable {
         arbiters[_arbiter] = ArbiterInfo(index, true, 1);
     }
 
+    function addArbiter(address _arbiter, uint _delay) public only(investor) notStarted {
+        require(_delay > 0);
+        var index = arbiterList.push(_arbiter);
+        arbiters[_arbiter] = ArbiterInfo(index, false, _delay);
+    }
+
+    function acceptArbiter() public onlyArbiter {
+        require(!arbiters[msg.sender].accepted);
+        arbiters[msg.sender].accepted = true;
+        arbiterAcceptCount += 1;
+    }
+
     function vote(address _voteAddress) public onlyArbiter {   
         require(disputing);
         require(_voteAddress == investor || _voteAddress == projectWallet);
+
         uint milestone = getCurrentMilestone();
         require(milestone > 0);
-        require(disputes[milestone-1].votes[msg.sender] == 0); 
-        require(now - disputes[milestone-1].timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
-        disputes[milestone-1].votes[msg.sender] = _voteAddress;
-        disputes[milestone-1].voters[disputes[milestone-1].votesProject+disputes[milestone-1].votesInvestor] = msg.sender;
+        var dispute = disputes[milestone-1];
+        require(dispute.votes[msg.sender] == 0); 
+        require(now - dispute.timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
+
+        dispute.votes[msg.sender] = _voteAddress; //sets the vote
+        dispute.voters[dispute.votesProject+dispute.votesInvestor] = msg.sender; // this line means adding arbiter to dispute.voters
         if (_voteAddress == projectWallet) {
-            disputes[milestone].votesProject += 1;
-            if (disputes[milestone].votesProject >= quorum) {
+            dispute.votesProject += 1;
+            if (dispute.votesProject >= quorum) {
                 executeVerdict(true);
             }
         } else {
-            disputes[milestone].votesInvestor += 1;
-            if (disputes[milestone].votesInvestor >= quorum) {
+            dispute.votesInvestor += 1;
+            if (dispute.votesInvestor >= quorum) {
                 executeVerdict(false);
             }
         } 
-
-        if (disputes[milestone].votesProject >= quorum) {
-            executeVerdict(true);
-        }
-        if (disputes[milestone].votesInvestor >= quorum) {
-            executeVerdict(false);
-        }
     }
 
     function executeVerdict(bool _projectWon) internal {
         if (!_projectWon) {
-            asyncSend(investor, (address(this)).balance);
-            token.transfer(address(icoContract), token.balanceOf(address(this))); // send all tokens back
+            asyncSend(investor, this.balance);
+            token.transfer(icoContract, token.balanceOf(this)); // send all tokens back
+            //asyncTokenSend(token.transfer(icoContract, token.balanceOf(this))); // send all tokens back
             icoContract.deleteInvestContract();
-        } else {//if project won then implementation proceed
+        } else {//if project won then implementation proceeds
             disputing = false;
         }
     }
@@ -163,12 +171,12 @@ contract InvestContract is TokenPullable, Pullable {
     }
 
     ///@dev When new milestone is started this functions is called
-	function milestoneStarted(uint _milestone) public only(address(icoContract)) {
+	function milestoneStarted(uint _milestone) public only(icoContract) {
         require(!disputing);
 		var etherToSend = etherPartition[_milestone];
 		var tokensToSend = tokenPartition[_milestone];
 
-		asyncSend(projectWallet, etherToSend); //async send
+		asyncSend(projectWallet, etherToSend); 
 		asyncTokenSend(investor, tokensToSend);
     }
 
