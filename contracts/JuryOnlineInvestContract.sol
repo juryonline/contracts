@@ -3,6 +3,7 @@ import "./JuryOnlineICOContract.sol";
 import "./Pullable.sol";
 
 contract InvestContract is TokenPullable, Pullable {
+    using SafeMath for uint;
 
     address public projectWallet; // person from ico team
     address public investor; 
@@ -40,7 +41,7 @@ contract InvestContract is TokenPullable, Pullable {
     uint public etherAmount; //How much Ether investor wants to invest
     uint public tokenAmount; //How many tokens investor wants to receive
 
-    bool public disputing=false;
+    bool public disputing = false;
     uint public amountToPay; //investAmount + commissions
     
     modifier only(address _sender) {
@@ -89,10 +90,10 @@ contract InvestContract is TokenPullable, Pullable {
 		uint totalTokenInvestment;
 		for(uint i=0; i<icoContract.milestonesLength(); i++) {
 			(milestoneEtherTarget, milestoneTokenTarget, , , , , ) = icoContract.milestones(i);
-			milestoneEtherAmount = _etherAmount * milestoneEtherTarget / icoContract.totalEther();  
-			milestoneTokenAmount = _tokenAmount * milestoneTokenTarget / icoContract.totalToken();
-			totalEtherInvestment += milestoneEtherAmount; //used to prevent rounding errors
-			totalTokenInvestment += milestoneTokenAmount; //used to prevent rounding errors
+			milestoneEtherAmount = _etherAmount.mul(milestoneEtherTarget).div(icoContract.totalEther());  
+			milestoneTokenAmount = _tokenAmount.mul(milestoneTokenTarget).div(icoContract.totalToken());
+			totalEtherInvestment = totalEtherInvestment.add(milestoneEtherAmount); //used to prevent rounding errors
+			totalTokenInvestment = totalTokenInvestment.add(milestoneTokenAmount); //used to prevent rounding errors
 			etherPartition.push(milestoneEtherAmount);  
 			tokenPartition.push(milestoneTokenAmount);
 		}

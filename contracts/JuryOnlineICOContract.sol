@@ -3,6 +3,7 @@ import "./ERC20Token.sol";
 import "./JuryOnlineInvestContract.sol";
 
 contract ICOContract {
+    using SafeMath for uint;
     
     address public projectWallet; //beneficiary wallet
     address public operator; //address of the ICO operator — the one who adds milestones and InvestContracts
@@ -92,8 +93,8 @@ contract ICOContract {
     /// @param _duration assumed duration of the milestone
     /// @param _description description of added milestone
     function addMilestone(uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description) public notSealed only(operator) returns(uint) {
-        totalEther += _etherAmount;
-        totalToken += _tokenAmount;
+        totalEther = totalEther.add(_etherAmount);
+        totalToken = totalToken.add(_tokenAmount);
         return milestones.push(Milestone(_etherAmount, _tokenAmount, _startTime, 0, _duration, _description, ""));
     }
 
@@ -106,8 +107,8 @@ contract ICOContract {
     /// @param _description description of the milestone
     function editMilestone(uint _id, uint _etherAmount, uint _tokenAmount, uint _startTime, uint _duration, string _description) public notSealed only(operator) {
         assert(_id < milestones.length);
-        totalEther = totalEther - milestones[_id].etherAmount + _etherAmount;
-        totalToken = totalToken - milestones[_id].tokenAmount + _tokenAmount;
+        totalEther = (totalEther - milestones[_id].etherAmount).add(_etherAmount); //previous addition 
+        totalToken = (totalToken - milestones[_id].tokenAmount).add(_tokenAmount);
         milestones[_id].etherAmount = _etherAmount;
         milestones[_id].tokenAmount = _tokenAmount;
         milestones[_id].startTime = _startTime;
@@ -161,9 +162,8 @@ contract ICOContract {
         pendingInvestContracts[_investContractAddress] = true; 
     }
 
-    /// @dev This function is called by InvestContract when it receives Ether. It shold move this InvestContract from pending to the real ones.
+    /// @dev This function is called by InvestContract when it receives Ether. It moves this InvestContract from pending to the real ones.
     function investContractDeposited() public notStarted {
-        //require(maximumCap >= investEthAmount + investorEther);
         require(pendingInvestContracts[msg.sender]);
         delete pendingInvestContracts[msg.sender];
         investContracts.push(msg.sender);
@@ -173,8 +173,8 @@ contract ICOContract {
         uint investmentToken = investContract.tokenAmount();
         uint investmentEther = investContract.etherAmount();
 
-        etherLeft -= investmentEther;
-        tokenLeft -= investmentToken;
+        etherLeft = etherLeft.sub(investmentEther);
+        tokenLeft = tokenLeft.sub(investmentToken);
         assert(token.transfer(msg.sender, investmentToken)); 
     }
 
