@@ -1,4 +1,4 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.20;
 
 library SafeMath {
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -8,9 +8,7 @@ library SafeMath {
   }
 
   function div(uint256 a, uint256 b) internal  pure returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
     uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
 
@@ -26,17 +24,15 @@ library SafeMath {
   }
 }
 
-contract Base {
-    modifier only(address allowed) {
-        require(msg.sender == allowed);
-        _;
-    }
-}
-
-contract Owned is Base {
+contract Owned {
 
     address public owner;
     address newOwner;
+
+    modifier only(address _allowed) {
+        require(msg.sender == _allowed);
+        _;
+    }
 
     function Owned() public {
         owner = msg.sender;
@@ -58,7 +54,10 @@ contract Owned is Base {
 contract ERC20 is Owned {
     using SafeMath for uint;
 
+    uint public totalSupply;
     bool public isStarted = false;
+    mapping (address => uint) balances;
+    mapping (address => mapping (address => uint)) allowed;
 
     modifier isStartedOnly() {
         require(isStarted);
@@ -90,7 +89,7 @@ contract ERC20 is Owned {
         return true;
     }
 
-    function balanceOf(address _owner) constant public returns (uint balance) {
+    function balanceOf(address _owner) public view returns (uint balance) {
         return balances[_owner];
     }
 
@@ -110,14 +109,10 @@ contract ERC20 is Owned {
         return true;
     }
 
-    function allowance(address _owner, address _spender) constant public returns (uint remaining) {
+    function allowance(address _owner, address _spender) public view returns (uint remaining) {
         return allowed[_owner][_spender];
     }
 
-    mapping (address => uint) balances;
-    mapping (address => mapping (address => uint)) allowed;
-
-    uint public totalSupply;
 }
 
 contract Token is ERC20 {
@@ -126,7 +121,6 @@ contract Token is ERC20 {
     string public name;
     string public symbol;
     uint8 public decimals;
-
 
     function Token(string _name, string _symbol, uint8 _decimals) public {
         name = _name;
@@ -159,10 +153,11 @@ contract Token is ERC20 {
 contract TokenWithoutStart is Owned {
     using SafeMath for uint;
 
+    mapping (address => uint) balances;
+    mapping (address => mapping (address => uint)) allowed;
     string public name;
     string public symbol;
     uint8 public decimals;
-
     uint public totalSupply;
 
     event Transfer(address indexed _from, address indexed _to, uint _value);
@@ -191,7 +186,7 @@ contract TokenWithoutStart is Owned {
         return true;
     }
 
-    function balanceOf(address _owner) constant public returns (uint balance) {
+    function balanceOf(address _owner) public view returns (uint balance) {
         return balances[_owner];
     }
 
@@ -211,12 +206,9 @@ contract TokenWithoutStart is Owned {
         return true;
     }
 
-    function allowance(address _owner, address _spender) constant public returns (uint remaining) {
+    function allowance(address _owner, address _spender) public view returns (uint remaining) {
         return allowed[_owner][_spender];
     }
-
-    mapping (address => uint) balances;
-    mapping (address => mapping (address => uint)) allowed;
 
     function mint(address _to, uint _amount) public only(owner) returns(bool) {
         totalSupply = totalSupply.add(_amount);

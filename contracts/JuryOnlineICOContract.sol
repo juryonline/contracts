@@ -7,16 +7,16 @@ contract ICOContract {
     address public projectWallet; //beneficiary wallet
     address public operator; //address of the ICO operator — the one who adds milestones and InvestContracts
 
-    uint constant waitPeriod = 7 days; //wait period after milestone finish and untile the next one can be started
+    uint constant waitPeriod = 7 days; //wait period after milestone finish and until the next one can be started
 
-    mapping(address => bool) public pendingInvestContracts;
+    mapping(address => bool) public pendingInvestContracts; //pending = not yet paid
 
     address[] public investContracts = [0x0]; // accepted InvestContracts
     mapping(address => uint) public investContractsIndices;
 
     uint public minimalInvestment = 0 ether;
     
-    uint public totalEther; // How much Ether is collected =sum of all milestones' etherAmount
+    uint public totalEther; // How much Ether is collected = sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
 
     uint public tokenLeft;
@@ -36,7 +36,7 @@ contract ICOContract {
         uint finishTime; //real time when milestone has finished, set upon finish
         uint duration; //assumed duration for milestone implementation, set upon milestone creation
         string description; 
-        string results;
+        string result;
     }
 
     Milestone[] public milestones;
@@ -127,11 +127,11 @@ contract ICOContract {
 
     ///in fact modifier started is useless, as it will throw if currentMilestone <1, however it remains here for readability
     ///@dev Finishes milestone
-    ///@param _results milestone results
-    function finishMilestone(string _results) public started only(operator) {
+    ///@param _result milestone result
+    function finishMilestone(string _result) public started only(operator) {
         //require(milestones[currentMilestone-1].finishTime == 0);//can be called only once
         milestones[currentMilestone-1].finishTime = now;
-        milestones[currentMilestone-1].results = _results;
+        milestones[currentMilestone-1].result = _result;
     }
 
     ///@dev Starts next milestone

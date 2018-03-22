@@ -6,3 +6,4 @@ package*
 build/
 abi/
 *.abi
+contracts/JuryOnlineVesting*
