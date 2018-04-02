@@ -5,7 +5,7 @@ import "./Pullable.sol";
 contract InvestContract is TokenPullable, Pullable {
     using SafeMath for uint;
 
-    address public projectWallet; // person from ico team
+    address public projectWallet; //beneficiary
     address public investor; 
 
     uint public arbiterAcceptCount;
@@ -42,7 +42,7 @@ contract InvestContract is TokenPullable, Pullable {
     uint public tokenAmount; //How many tokens investor wants to receive
 
     bool public disputing = false;
-    uint public amountToPay; //investAmount + commissions
+    uint public amountToPay; //investAmount + commission
     
     modifier only(address _sender) {
         require(msg.sender == _sender);
@@ -73,7 +73,7 @@ contract InvestContract is TokenPullable, Pullable {
         tokenAmount = _tokenAmount;
         projectWallet = icoContract.projectWallet();
         investor = _investor;
-        amountToPay = etherAmount*101/100; //101% of the agreed amount
+        amountToPay = etherAmount; 
         quorum = 2;
 
         addAcceptedArbiter(0xB69945E2cB5f740bAa678b9A9c5609018314d950); //Valery
@@ -104,6 +104,7 @@ contract InvestContract is TokenPullable, Pullable {
     function() payable public notStarted only(investor) { 
         require(arbiterAcceptCount >= quorum);
         require(msg.value == amountToPay);
+        icoContract.juryOnlineWallet.transfer(msg.value*icoContract.commission()/100);
         icoContract.investContractDeposited();
     } 
 

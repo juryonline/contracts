@@ -8,15 +8,16 @@ contract ICOContract {
     address public projectWallet; //beneficiary wallet
     address public operator; //address of the ICO operator — the one who adds milestones and InvestContracts
 
-    uint constant waitPeriod = 7 days; //wait period after milestone finish and until the next one can be started
+    address public juryOnlineWallet; //address that receives commission
+    uint public commission = 1; //in percents
+
+    //uint constant waitPeriod = 7 days; //wait period after milestone finish and until the next one can be started
 
     mapping(address => bool) public pendingInvestContracts; //pending = not yet paid
 
     address[] public investContracts = [0x0]; // accepted InvestContracts
     mapping(address => uint) public investContractsIndices;
 
-    uint public minimalInvestment = 0 ether;
-    
     uint public totalEther; // How much Ether is collected = sum of all milestones' etherAmount
     uint public totalToken; // how many tokens are distributed = sum of all milestones' tokenAmount
 
@@ -29,6 +30,8 @@ contract ICOContract {
     uint public minimumCap; // set in constructor
     uint public maximumCap;  // set in constructor
 
+    uint public minimalInvestment;
+    
     //Structure for milestone
     struct Milestone {
         uint etherAmount; //how many Ether is needed for this milestone
@@ -77,13 +80,14 @@ contract ICOContract {
     /// @param _maximumCap Wei value of maximum cap for responsible ICO
     /// @param _operator ICO operator, the person who adds, starts, and finishes milestones; creates InvestContracts 
     function ICOContract(address _tokenAddress, address _projectWallet, uint _sealTimestamp, uint _minimumCap,
-                         uint _maximumCap, address _operator) public {
+                         uint _maximumCap, uint _minimalInvestment, address _operator) public {
         operator = _operator;
         token = Token(_tokenAddress);
         projectWallet = _projectWallet;
         sealTimestamp = _sealTimestamp;
         minimumCap = _minimumCap;
         maximumCap = _maximumCap;
+        minimalInvestment = _minimalInvestment;
     }
   
     /// @dev Adds a milestone.
@@ -130,7 +134,7 @@ contract ICOContract {
     ///@dev Finishes milestone
     ///@param _result milestone result
     function finishMilestone(string _result) public started only(operator) {
-        //require(milestones[currentMilestone-1].finishTime == 0);//can be called only once
+        require(milestones[currentMilestone-1].finishTime == 0); //can be called only once
         milestones[currentMilestone-1].finishTime = now;
         milestones[currentMilestone-1].result = _result;
     }
