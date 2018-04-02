@@ -69,11 +69,11 @@ contract InvestContract is TokenPullable, Pullable {
     TokenPullable(ICOContract(_ICOContractAddress).token()) //wierd initialization: TokenPullable needs token address and must be set before InvestContract constructor takes place 
     public {
         icoContract = ICOContract(_ICOContractAddress);
-		etherAmount = _etherAmount;
+        amountToPay = _etherAmount; 
+		etherAmount = _etherAmount*(100-icoContract.commission())/100; //Ether commission handling
         tokenAmount = _tokenAmount;
         projectWallet = icoContract.projectWallet();
         investor = _investor;
-        amountToPay = etherAmount; 
         quorum = 2;
 
         addAcceptedArbiter(0xB69945E2cB5f740bAa678b9A9c5609018314d950); //Valery
@@ -90,15 +90,15 @@ contract InvestContract is TokenPullable, Pullable {
 		uint totalTokenInvestment;
 		for(uint i=0; i<icoContract.milestonesLength(); i++) {
 			(milestoneEtherTarget, milestoneTokenTarget, , , , , ) = icoContract.milestones(i);
-			milestoneEtherAmount = _etherAmount.mul(milestoneEtherTarget).div(icoContract.totalEther());  
-			milestoneTokenAmount = _tokenAmount.mul(milestoneTokenTarget).div(icoContract.totalToken());
+			milestoneEtherAmount = etherAmount.mul(milestoneEtherTarget).div(icoContract.totalEther());  
+			milestoneTokenAmount = tokenAmount.mul(milestoneTokenTarget).div(icoContract.totalToken());
 			totalEtherInvestment = totalEtherInvestment.add(milestoneEtherAmount); //used to prevent rounding errors
 			totalTokenInvestment = totalTokenInvestment.add(milestoneTokenAmount); //used to prevent rounding errors
 			etherPartition.push(milestoneEtherAmount);  
 			tokenPartition.push(milestoneTokenAmount);
 		}
-		etherPartition[0] += _etherAmount - totalEtherInvestment; //rounding error is added to the first milestone
-		tokenPartition[0] += _tokenAmount - totalTokenInvestment; //rounding error is added to the first milestone
+		etherPartition[0] += etherAmount - totalEtherInvestment; //rounding error is added to the first milestone
+		tokenPartition[0] += tokenAmount - totalTokenInvestment; //rounding error is added to the first milestone
     }
 
     function() payable public notStarted only(investor) { 
