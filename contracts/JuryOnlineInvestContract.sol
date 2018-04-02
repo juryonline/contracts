@@ -104,7 +104,7 @@ contract InvestContract is TokenPullable, Pullable {
     function() payable public notStarted only(investor) { 
         require(arbiterAcceptCount >= quorum);
         require(msg.value == amountToPay);
-        icoContract.juryOnlineWallet.transfer(msg.value*icoContract.commission()/100);
+        icoContract.juryOnlineWallet.transfer(amountToPay-etherAmount);
         icoContract.investContractDeposited();
     } 
 

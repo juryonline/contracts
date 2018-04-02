@@ -8,7 +8,7 @@ contract ICOContract {
     address public projectWallet; //beneficiary wallet
     address public operator; //address of the ICO operator — the one who adds milestones and InvestContracts
 
-    address public juryOnlineWallet; //address that receives commission
+    address public juryOnlineWallet = 0x3e134C5dAf56e0e28bd04beD46969Bd516932f02; //address that receives commission
     uint public commission = 1; //in percents
 
     //uint constant waitPeriod = 7 days; //wait period after milestone finish and until the next one can be started
