@@ -1,9 +1,6 @@
 # Jury.Online Contracts
 This repository containts contracts for Jury.Online Responsible ICO operation.
 
-
-# Contracts
-
 There are two main contracts:
 
 __ICOContract__
