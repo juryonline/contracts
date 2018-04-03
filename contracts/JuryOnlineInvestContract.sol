@@ -111,13 +111,13 @@ contract InvestContract is TokenPullable, Pullable {
     //Adding an arbiter which has already accepted his participation in ICO.
     function addAcceptedArbiter(address _arbiter) internal notStarted {
         arbiterAcceptCount +=1;
-        var index = arbiterList.push(_arbiter);
+        uint index = arbiterList.push(_arbiter);
         arbiters[_arbiter] = ArbiterInfo(index, true, 1);
     }
 
     function addArbiter(address _arbiter, uint _delay) public notStarted only(investor) {
         require(_delay > 0);
-        var index = arbiterList.push(_arbiter);
+        uint index = arbiterList.push(_arbiter);
         arbiters[_arbiter] = ArbiterInfo(index, false, _delay);
     }
 
@@ -133,10 +133,9 @@ contract InvestContract is TokenPullable, Pullable {
 
         uint milestone = getCurrentMilestone();
         require(milestone > 0);
-        var dispute = disputes[milestone-1];
+        Dispute storage dispute = disputes[milestone-1];
         require(dispute.votes[msg.sender] == 0); 
         require(now - dispute.timestamp >= arbiters[msg.sender].voteDelay); //checking if enough time has passed since dispute had been opened
-
         dispute.votes[msg.sender] = _voteAddress; //sets the vote
         dispute.voters[dispute.votesProject+dispute.votesInvestor] = msg.sender; // this line means adding arbiter to dispute.voters
         if (_voteAddress == projectWallet) {
@@ -175,8 +174,8 @@ contract InvestContract is TokenPullable, Pullable {
     ///@dev When new milestone is started this functions is called
 	function milestoneStarted(uint _milestone) public only(icoContract) {
         require(!disputing);
-		var etherToSend = etherPartition[_milestone];
-		var tokensToSend = tokenPartition[_milestone];
+		uint etherToSend = etherPartition[_milestone];
+		uint tokensToSend = tokenPartition[_milestone];
 
 		asyncSend(projectWallet, etherToSend); 
 		asyncTokenSend(investor, tokensToSend);

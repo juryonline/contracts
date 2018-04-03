@@ -96,7 +96,7 @@ In fact the differences are:
 
 # Jury.Online Token
 
-Jury.Online Token contract address: .
+Jury.Online Token contract address: 
 
 [0xdb455c71c1bc2de4e80ca451184041ef32054001](https://etherscan.io/token/0xdb455c71c1bc2de4e80ca451184041ef32054001)
 

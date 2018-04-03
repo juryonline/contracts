@@ -43,7 +43,7 @@ contract Owned {
     }
 
     function acceptOwnership() only(newOwner) public {
-        OwnershipTransferred(owner, newOwner);
+        emit OwnershipTransferred(owner, newOwner);
         owner = newOwner;
     }
 
@@ -76,7 +76,7 @@ contract ERC20 is Owned {
         require(_to != address(0));
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        Transfer(msg.sender, _to, _value);
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -85,7 +85,7 @@ contract ERC20 is Owned {
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-        Transfer(_from, _to, _value);
+        emit Transfer(_from, _to, _value);
         return true;
     }
 
@@ -96,7 +96,7 @@ contract ERC20 is Owned {
     function approve_fixed(address _spender, uint _currentValue, uint _value) isStartedOnly public returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
-            Approval(msg.sender, _spender, _value);
+            emit Approval(msg.sender, _spender, _value);
             return true;
         } else {
             return false;
@@ -105,7 +105,7 @@ contract ERC20 is Owned {
 
     function approve(address _spender, uint _value) isStartedOnly public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
@@ -136,7 +136,7 @@ contract Token is ERC20 {
     function mint(address _to, uint _amount) public only(owner) isNotStartedOnly returns(bool) {
         totalSupply = totalSupply.add(_amount);
         balances[_to] = balances[_to].add(_amount);
-        Transfer(msg.sender, _to, _amount);
+        emit Transfer(msg.sender, _to, _amount);
         return true;
     }
 
@@ -173,7 +173,7 @@ contract TokenWithoutStart is Owned {
         require(_to != address(0));
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        Transfer(msg.sender, _to, _value);
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -182,7 +182,7 @@ contract TokenWithoutStart is Owned {
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-        Transfer(_from, _to, _value);
+        emit Transfer(_from, _to, _value);
         return true;
     }
 
@@ -193,7 +193,7 @@ contract TokenWithoutStart is Owned {
     function approve_fixed(address _spender, uint _currentValue, uint _value) public returns (bool success) {
         if(allowed[msg.sender][_spender] == _currentValue){
             allowed[msg.sender][_spender] = _value;
-            Approval(msg.sender, _spender, _value);
+            emit Approval(msg.sender, _spender, _value);
             return true;
         } else {
             return false;
@@ -202,7 +202,7 @@ contract TokenWithoutStart is Owned {
 
     function approve(address _spender, uint _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
@@ -213,7 +213,7 @@ contract TokenWithoutStart is Owned {
     function mint(address _to, uint _amount) public only(owner) returns(bool) {
         totalSupply = totalSupply.add(_amount);
         balances[_to] = balances[_to].add(_amount);
-        Transfer(msg.sender, _to, _amount);
+        emit Transfer(msg.sender, _to, _amount);
         return true;
     }
 
