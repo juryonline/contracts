@@ -10,21 +10,17 @@ import "./ERC20Token.sol";
 contract Pullable {
   using SafeMath for uint256;
 
-  mapping(address => uint256) public payments;
+  mapping(address => uint256) public etherPayments;
 
   /**
   * @dev withdraw accumulated balance, called by payee.
   */
   function withdrawPayment() public {
-    address payee = msg.sender;
-    uint256 payment = payments[payee];
-
+    uint payment = etherPayments[msg.sender];
     require(payment != 0);
     require(this.balance >= payment);
-
-    payments[payee] = 0;
-
-    assert(payee.send(payment));
+    etherPayments[msg.sender] = 0;
+    assert(msg.sender.send(payment));
   }
 
   /**
@@ -33,7 +29,7 @@ contract Pullable {
   * @param _amount The amount to transfer.
   */
   function asyncSend(address _destination, uint256 _amount) internal {
-    payments[_destination] = payments[_destination].add(_amount);
+    etherPayments[_destination] = etherPayments[_destination].add(_amount);
   }
 }
 
@@ -52,15 +48,11 @@ contract TokenPullable {
   * @dev withdraw accumulated balance, called by payee.
   */
   function withdrawTokenPayment() public {
-    address tokenPayee = msg.sender;
-    uint256 tokenPayment = tokenPayments[tokenPayee];
-
+    uint tokenPayment = tokenPayments[msg.sender];
     require(tokenPayment != 0);
     require(token.balanceOf(address(this)) >= tokenPayment);
-
-    tokenPayments[tokenPayee] = 0;
-
-    assert(token.transfer(tokenPayee, tokenPayment));
+    tokenPayments[msg.sender] = 0;
+    assert(token.transfer(msg.sender, tokenPayment));
   }
 
   function asyncTokenSend(address _destination, uint _amount) internal {
