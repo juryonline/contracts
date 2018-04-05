@@ -15,7 +15,7 @@ contract Pullable {
   /**
   * @dev withdraw accumulated balance, called by payee.
   */
-  function withdrawPayment() public {
+  function withdrawEtherPayment() public {
     uint payment = etherPayments[msg.sender];
     require(payment != 0);
     require(this.balance >= payment);
