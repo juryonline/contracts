@@ -159,7 +159,7 @@ contract ICOContract {
     function addInvestContract(address _investContractAddress) public sealed notStarted only(operator) {
         InvestContract investContract = InvestContract(_investContractAddress);
         require(investContract.icoContract() == this);
-        require(investContract.etherAmount() >= minimalInvestment);
+        require(investContract.amountToPay() >= minimalInvestment);
         //require(milestones[0].startTime - now >= 5 days);
         //require(maximumCap >= _etherAmount + investorEther);
         //require(token.balanceOf(this) >= _tokenAmount + investorTokens);
