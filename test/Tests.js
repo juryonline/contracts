@@ -55,6 +55,7 @@ contract('ICOContract', function(accounts) {
     var startTime =     1516620617;
 	var minimumCap = 100;
 	var maximumCap = 10*minimumCap;
+    var minimalInvestment = 100;
 
     //milestone parameters
     var etherAmount = 10000000000;
@@ -77,7 +78,7 @@ contract('ICOContract', function(accounts) {
     }
 
     async function prepare() { //one day I will use this function
-        icoContract = await ICOContract.new(token.address, projectWallet, sealTimestamp, minimumCap, maximumCap, accounts[0], {from: accounts[0]});
+        icoContract = await ICOContract.new(token.address, projectWallet, sealTimestamp, minimumCap, maximumCap, minimalInvestment, accounts[0], {from: accounts[0]});
         token = await Token.new(testname, testsymbol, testdecimals, {from: accounts[0]});
         await token.mint(icoContract.address, tokenAmount*100, {from: accounts[0]});
         await token.start({from: accounts[0]});
@@ -91,7 +92,7 @@ contract('ICOContract', function(accounts) {
         token = await Token.new(testname, testsymbol, testdecimals, {from: accounts[0]});
     });
     it('Deploy of ICOContract', async function() {
-        icoContract = await ICOContract.new(token.address, projectWallet, sealTimestamp, minimumCap, maximumCap, accounts[0], {from: accounts[0]});
+        icoContract = await ICOContract.new(token.address, projectWallet, sealTimestamp, minimumCap, maximumCap, minimalInvestment, accounts[0], {from: accounts[0]});
     });
     it('Minting tokens to ICOContract', async function() {
         await token.mint(icoContract.address, tokenAmount*500, {from: accounts[0]});
@@ -130,16 +131,17 @@ contract('ICOContract', function(accounts) {
         await investContract.addAcceptedArbiter(accounts[9], {from: investor});
         */
         arbiterAcceptCount = await investContract.arbiterAcceptCount();
-        assert.equal(arbiterAcceptCount, 5, 'Arbiters have not been added');
+        assert.equal(arbiterAcceptCount.toNumber(), 3, 'Arbiters have not been added');
     });
     it('Send money to InvestContract', async function() {
         amountToPay = await investContract.amountToPay();
         await web3.eth.sendTransaction({from: investor, value: amountToPay.valueOf(), to: investContractAddress, gas: 5000000});
+        var etherAmount = await investContract.etherAmount()
 
-        p0 = Math.floor(etherAmount/8);
-        p1 = Math.floor(5*etherAmount/8);
-        p2 = Math.floor(2*etherAmount/8);
-        p0 = etherAmount-(p1+p2) 
+        p0 = Math.floor(etherAmount.toNumber()/8);
+        p1 = Math.floor(5*etherAmount.toNumber()/8);
+        p2 = Math.floor(2*etherAmount.toNumber()/8);
+        p0 = etherAmount.toNumber()-(p1+p2) 
         
         part0 = await investContract.etherPartition(0);
         part1 = await investContract.etherPartition(1);

@@ -69,8 +69,6 @@ by any other reason. Therefore both project and investor are added as arbiters w
 
 At any moment after the first milestone has started investor can open a dispute (it requires a reason to be opened).
 
-After a dispute is opened 
-
 For a dispute to be resolved, either investor or project must receive a specified amount of votes — *quorum* (to be
 precise, it's not the right term, as quorum is a minimum number of members needed to conduct an action). 
 
