@@ -80,7 +80,7 @@ contract ICOContract {
     /// @param _maximumCap Wei value of maximum cap for responsible ICO
     /// @param _minimalInvestment minimal possible investment
     /// @param _operator ICO operator, the person who adds, starts, and finishes milestones; creates InvestContracts 
-    function ICOContract(address _tokenAddress, address _projectWallet, uint _sealTimestamp, uint _minimumCap,
+    constructor(address _tokenAddress, address _projectWallet, uint _sealTimestamp, uint _minimumCap,
                          uint _maximumCap, uint _minimalInvestment, address _operator) public {
         operator = _operator;
         token = Token(_tokenAddress);

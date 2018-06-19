@@ -34,7 +34,7 @@ contract Owned {
         _;
     }
 
-    function Owned() public {
+    constructor() public {
         owner = msg.sender;
     }
 
@@ -122,7 +122,7 @@ contract Token is ERC20 {
     string public symbol;
     uint8 public decimals;
 
-    function Token(string _name, string _symbol, uint8 _decimals) public {
+    constructor(string _name, string _symbol, uint8 _decimals) public {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
@@ -163,7 +163,7 @@ contract TokenWithoutStart is Owned {
     event Transfer(address indexed _from, address indexed _to, uint _value);
     event Approval(address indexed _owner, address indexed _spender, uint _value);
 
-    function TokenWithoutStart(string _name, string _symbol, uint8 _decimals) public {
+    constructor(string _name, string _symbol, uint8 _decimals) public {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;

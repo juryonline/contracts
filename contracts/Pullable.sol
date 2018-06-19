@@ -18,7 +18,7 @@ contract Pullable {
   function withdrawEtherPayment() public {
     uint payment = etherPayments[msg.sender];
     require(payment != 0);
-    require(this.balance >= payment);
+    require(address(this).balance >= payment);
     etherPayments[msg.sender] = 0;
     assert(msg.sender.send(payment));
   }
@@ -40,7 +40,7 @@ contract TokenPullable {
 
   mapping(address => uint256) public tokenPayments;
 
-  function TokenPullable(address _token) public {
+  constructor(address _token) public {
       token = Token(_token);
   }
 

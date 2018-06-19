@@ -65,7 +65,7 @@ contract InvestContract is TokenPullable, Pullable {
     }
 
     ///@dev Creates an InvestContract
-    function InvestContract(address _ICOContractAddress, address _investor,  uint _etherAmount, uint _tokenAmount)
+    constructor(address _ICOContractAddress, address _investor,  uint _etherAmount, uint _tokenAmount)
     TokenPullable(ICOContract(_ICOContractAddress).token()) //wierd initialization: TokenPullable needs token address and must be set before InvestContract constructor takes place 
     public {
         icoContract = ICOContract(_ICOContractAddress);
@@ -153,7 +153,7 @@ contract InvestContract is TokenPullable, Pullable {
 
     function executeVerdict(bool _projectWon) internal {
         if (!_projectWon) {
-            asyncSend(investor, this.balance);
+            asyncSend(investor, address(this).balance);
             token.transfer(icoContract, token.balanceOf(this)); // send all tokens back
             //asyncTokenSend(token.transfer(icoContract, token.balanceOf(this))); // send all tokens back
             icoContract.deleteInvestContract();
